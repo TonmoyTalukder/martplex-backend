@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "author": "Tonmoy Talukder",
+  "description": "An E-Commerce Application,that is designed to provide a complete online shopping experience for users, vendors, and administrators.",
   "license": "MIT",
   "scripts": {
     "postinstall": "prisma generate",
@@ -41,5 +42,9 @@
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.16",
     "zod": "^3.23.8"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TonmoyTalukder/martplex-backend.git"
   }
 }
