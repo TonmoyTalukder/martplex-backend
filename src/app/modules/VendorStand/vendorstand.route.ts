@@ -34,7 +34,7 @@ router.get(
   
   router.get(
     '/',
-    vendorStandController.getVendorStandByID,
+    vendorStandController.getAllVendorStands,
   );
 
 router.post(

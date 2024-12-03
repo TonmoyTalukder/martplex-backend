@@ -10,10 +10,10 @@ import {
 import pick from '../../../shared/pick';
 import { VendorStand } from '@prisma/client';
 
-const getVendorStand = catchAsync(async (req, res, next) => {
+const getAllVendorStands = catchAsync(async (req, res, next) => {
   const filters = pick(req.query, vendorStandFilterableFields);
   const options = pick(req.query, vendorStandFilterableOptions);
-  const result = await vendorStandService.getAllVendorStand(filters, options);
+  const result = await vendorStandService.getAllVendorStands(filters, options);
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,
@@ -44,6 +44,7 @@ const createVendorStand = catchAsync(async (req, res, next) => {
     data: result,
   });
 });
+
 const updateVendorStand = catchAsync(async (req, res, next) => {
   const result = await vendorStandService.updateVendorStand(req);
   sendResponse(res, {
@@ -114,7 +115,7 @@ const getFollowedVendorStands = catchAsync(async (req, res, next) => {
 });
 
 export const vendorStandController = {
-  getVendorStand,
+  getAllVendorStands,
   getVendorStandByID,
   createVendorStand,
   updateVendorStand,

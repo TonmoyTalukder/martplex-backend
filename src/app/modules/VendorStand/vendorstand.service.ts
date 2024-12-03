@@ -2,6 +2,7 @@ import {
   Follow,
   Prisma,
   User,
+  UserStatus,
   VendorStand,
   VendorStandStatus,
 } from '@prisma/client';
@@ -13,7 +14,7 @@ import { IPaginationOptions } from '../../interfaces/pagination';
 import { paginationHelper } from '../../../helpers/paginationHelper';
 import { vendorStandSearchableFields } from './vendorstand.constant';
 
-const getAllVendorStand = async (params: any, options: IPaginationOptions) => {
+const getAllVendorStands = async (params: any, options: IPaginationOptions) => {
   const { limit, page, skip, sortBy, sortOrder } =
     paginationHelper.calculatePagination(options);
   const { searchTerm, ...filterData } = params;
@@ -81,6 +82,10 @@ const getVendorStandByID = async (req: Request) => {
       id: req.body.id,
       status: VendorStandStatus.ACTIVE,
       isDeleted: false,
+      owner: {
+        status: UserStatus.ACTIVE,
+        isDeleted: false,
+      },
     },
   });
 
@@ -236,7 +241,7 @@ const getFollowedVendorStands = async (req: Request) => {
 };
 
 export const vendorStandService = {
-  getAllVendorStand,
+  getAllVendorStands,
   getVendorStandByID,
   createVendorStand,
   updateVendorStand,

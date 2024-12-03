@@ -84,12 +84,14 @@ model Follow {
 model Product {
   id              String     @id @default(uuid())
   name            String
+  images          String[]
   description     String?
   price           Float
   stock           Int
+  isDeleted       Boolean     @default(false)
   vendorStand     VendorStand @relation(fields: [vendorStandId], references: [id])
   vendorStandId   String
-
+  categoryId      String
   categories      ProductCategory[]
   orderItems      OrderItem[]       
   reviews         Review[]  
