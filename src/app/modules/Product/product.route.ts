@@ -39,7 +39,7 @@ router.patch(
     req.body = productValidation.updateProductSchema.parse(
       JSON.parse(req.body.data),
     );
-    return productController.createProduct(req, res, next);
+    return productController.updateProduct(req, res, next);
   },
 );
 
@@ -50,4 +50,4 @@ router.patch(
   productController.softDelete,
 );
 
-export const vendorStandRoutes = router;
+export const productRoutes = router;

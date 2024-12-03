@@ -1,9 +1,8 @@
-import { Request, RequestHandler, Response } from 'express';
+import { Request, Response } from 'express';
 import { sendResponse } from '../../../helpers/responseHelper';
 import catchAsync from '../../../shared/catchAsync';
 import { StatusCodes } from 'http-status-codes';
 import pick from '../../../shared/pick';
-import { VendorStand } from '@prisma/client';
 import { productService } from './product.service';
 import {
   productFilterableFields,
