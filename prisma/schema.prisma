@@ -11,16 +11,21 @@ model User {
   id                        String     @id @default(uuid())
   name                      String
   email                     String     @unique
-  phoneNumber               String     
+  phoneNumber               String
   password                  String
   role                      UserRole
   status                    UserStatus @default(PENDING_VERIFICATION)
+  profilePhoto              String?
   isVerified                Boolean    @default(false)
   isDeleted                 Boolean    @default(false)
   verificationCode          String?
   createdAt                 DateTime   @default(now())
   updatedAt                 DateTime   @updatedAt
   verificationCodeExpiresAt DateTime?
+
+  vendorStand               VendorStand?
+  orders                    Order[]    @relation("UserOrders")
+  reviews                   Review[]
 
   @@map("users")
 }
@@ -37,4 +42,107 @@ enum UserStatus {
   BLOCKED
   DELETED
   PENDING_VERIFICATION
+}
+
+model VendorStand {
+  id          String       @id @default(uuid())
+  name        String
+  description String?
+  logo        String?
+  ownerId     String        @unique
+  owner       User          @relation(fields: [ownerId], references: [id])
+  products    Product[]
+  reviews     Review[]      
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("vendor_stands")
+}
+
+model Product {
+  id          String     @id @default(uuid())
+  name        String
+  description String?
+  price       Float
+  stock       Int
+  vendorStand VendorStand @relation(fields: [vendorStandId], references: [id])
+  vendorStandId String
+  categories  ProductCategory[]
+  orderItems  OrderItem[]       
+  reviews     Review[]          
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("products")
+}
+
+model ProductCategory {
+  productId  String
+  categoryId String
+  product    Product  @relation(fields: [productId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  @@id([productId, categoryId])
+  @@map("product_categories")
+}
+
+model Category {
+  id          String     @id @default(uuid())
+  name        String
+  description String?
+  products    ProductCategory[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("categories")
+}
+
+model Order {
+  id          String     @id @default(uuid())
+  userId      String
+  user        User       @relation("UserOrders", fields: [userId], references: [id], onDelete: Cascade)
+  status      OrderStatus
+  totalAmount Float
+  items       OrderItem[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String  @id @default(uuid())
+  orderId     String
+  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product @relation(fields: [productId], references: [id])
+  quantity    Int
+  price       Float
+
+  @@map("order_items")
+}
+
+model Review {
+  id           String       @id @default(uuid())
+  content      String
+  rating       Int          @default(0)
+  userId       String
+  user         User         @relation(fields: [userId], references: [id])
+  productId    String?
+  product      Product?     @relation(fields: [productId], references: [id])
+  vendorStandId String?
+  vendorStand  VendorStand? @relation(fields: [vendorStandId], references: [id])
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@map("reviews")
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELED
 }

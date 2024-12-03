@@ -1,4 +1,4 @@
-# MartPlex-Backend: E-Commerce Application
+# MartPlex-Backend: Multi Vendor E-Commerce Application
 
 ### Author
 **[Tonmoy Talukder](https://tonmoytalukder.github.io/dev)** </br>

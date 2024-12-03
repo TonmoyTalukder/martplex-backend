@@ -90,7 +90,51 @@ const registerUser = async (payload: {
   };
 };
 
-const verifyUser = async (payload: {email: string, code: string}) => {
+const verifyRequest = async (payload: { email: string }) => {
+  const existingUser = await prisma.user.findUnique({
+    where: { email: payload.email },
+  });
+
+  if (!existingUser) {
+    throw new Error('Email is not registered.');
+  }
+
+  const verificationCode = crypto.randomBytes(3).toString('hex');
+  const expirationTime = new Date(Date.now() + 10 * 60 * 1000);
+
+  await prisma.user.update({
+    where: {
+      email: payload.email,
+    },
+    data: {
+      verificationCode: await bcrypt.hash(verificationCode, 12),
+      verificationCodeExpiresAt: expirationTime,
+    },
+  });
+
+  // Send verification email
+  await emailSender(
+    payload.email,
+    `
+    <div style="font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; max-width: 500px; margin: 20px auto; text-align: center;">
+        <p style="color: #333; font-size: 16px; margin-bottom: 10px;">Dear ${existingUser.name},</p>
+        <p style="color: #555; font-size: 14px; margin-bottom: 20px;">
+            Please verify your email address using the code below:
+        </p>
+        <p style="font-size: 20px; font-weight: bold; color: #007bff; margin-bottom: 20px;">${verificationCode}</p>
+        <p style="color: #555; font-size: 14px;">
+            This code will expire in <strong>10 minutes</strong>.
+        </p>
+    </div>`,
+  );
+
+  return {
+    message:
+      'Please check your email for the verification code.',
+  };
+};
+
+const verifyUser = async (payload: { email: string; code: string }) => {
   const user = await prisma.user.findUnique({
     where: {
       email: payload.email,
@@ -113,7 +157,10 @@ const verifyUser = async (payload: {email: string, code: string}) => {
     throw new Error('Verification code has expired');
   }
 
-  const isCodeValid = await bcrypt.compare(payload.code, user.verificationCode!);
+  const isCodeValid = await bcrypt.compare(
+    payload.code,
+    user.verificationCode!,
+  );
 
   if (!isCodeValid) {
     throw new Error('Invalid verification code');
@@ -326,6 +373,7 @@ const resetPassword = async (
 
 export const authServices = {
   registerUser,
+  verifyRequest,
   verifyUser,
   loginUser,
   refreshToken,

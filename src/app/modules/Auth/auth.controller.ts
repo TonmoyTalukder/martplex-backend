@@ -24,6 +24,19 @@ const registerUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const verifyRequest = catchAsync(async (req: Request, res: Response) => {
+  const result = await authServices.verifyRequest(req.body);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'User verification code sent successfully!',
+    data: {
+      accessToken: result,
+    },
+  });
+});
+
 const verifyUser = catchAsync(async (req: Request, res: Response) => {
   const result = await authServices.verifyUser(req.body);
 
@@ -115,6 +128,7 @@ const resetPassword = catchAsync(
 
 export const authControllers = {
   registerUser,
+  verifyRequest,
   verifyUser,
   loginUser,
   refreshToken,
