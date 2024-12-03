@@ -162,7 +162,7 @@ const getMyProfile = async (user: IAuthUser) => {
     },
   });
 
-  return { ...userInfo };
+  return { userInfo };
 };
 
 const updateMyProfile = async (user: IAuthUser, req: Request) => {
@@ -192,6 +192,27 @@ const updateMyProfile = async (user: IAuthUser, req: Request) => {
   return { profileInfo };
 };
 
+const blockUser = async (id: string, block: boolean) => {
+  await prisma.user.findUniqueOrThrow({
+    where: {
+      id,
+      isDeleted: false,
+    },
+  });
+
+
+  const blockedUser = await prisma.user.update({
+    where: {
+      id,
+    },
+    data: {
+      status: block ? UserStatus.BLOCKED : UserStatus.ACTIVE,
+    },
+  });
+
+  return blockedUser;
+};
+
 const softDelete = async (id: string) => {
   await prisma.user.findUniqueOrThrow({
     where: {
@@ -206,6 +227,7 @@ const softDelete = async (id: string) => {
     },
     data: {
       isDeleted: true,
+      status: UserStatus.DELETED,
     },
   });
 
@@ -219,5 +241,6 @@ export const userService = {
   becomeVendor,
   getMyProfile,
   updateMyProfile,
+  blockUser,
   softDelete,
 };

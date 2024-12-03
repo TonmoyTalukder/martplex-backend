@@ -55,6 +55,12 @@ router.patch(
 );
 
 router.patch(
+  '/:id/block',
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  userController.blockUser,
+);
+
+router.patch(
   '/:id/soft-delete',
   auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
   userController.softDelete,

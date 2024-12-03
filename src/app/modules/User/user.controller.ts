@@ -84,6 +84,19 @@ const updateMyProfile = catchAsync(
   },
 );
 
+const blockUser = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { block } = req.body;
+
+  const result = await userService.blockUser(id, block);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'User blocked successfuly!',
+    data: result,
+  });
+});
+
 const softDelete = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
 
@@ -103,5 +116,6 @@ export const userController = {
   becomeVendor,
   getMyProfile,
   updateMyProfile,
+  blockUser,
   softDelete,
 };

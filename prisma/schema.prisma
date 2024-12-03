@@ -26,6 +26,8 @@ model User {
   vendorStand               VendorStand?
   orders                    Order[]    @relation("UserOrders")
   reviews                   Review[]
+  follows                   Follow[]   @relation("UserFollows")
+  recentProducts            RecentProduct[]
 
   @@map("users")
 }
@@ -45,34 +47,56 @@ enum UserStatus {
 }
 
 model VendorStand {
-  id          String       @id @default(uuid())
+  id          String            @id @default(uuid())
   name        String
   description String?
   logo        String?
-  ownerId     String        @unique
-  owner       User          @relation(fields: [ownerId], references: [id])
+  ownerId     String            @unique
+  owner       User              @relation(fields: [ownerId], references: [id])
+  isDeleted   Boolean           @default(false)
+  status      VendorStandStatus @default(ACTIVE)
   products    Product[]
   reviews     Review[]      
+  followers   Follow[]          @relation("VendorFollows")
 
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 
   @@map("vendor_stands")
 }
 
+enum VendorStandStatus {
+  ACTIVE
+  BLACKLISTED
+}
+
+model Follow {
+  id           String       @id @default(uuid())
+  userId       String
+  user         User         @relation("UserFollows", fields: [userId], references: [id])
+  vendorId     String
+  vendor       VendorStand  @relation("VendorFollows", fields: [vendorId], references: [id])
+  createdAt    DateTime     @default(now())
+
+  @@map("follows")
+}
+
 model Product {
-  id          String     @id @default(uuid())
-  name        String
-  description String?
-  price       Float
-  stock       Int
-  vendorStand VendorStand @relation(fields: [vendorStandId], references: [id])
-  vendorStandId String
-  categories  ProductCategory[]
-  orderItems  OrderItem[]       
-  reviews     Review[]          
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id              String     @id @default(uuid())
+  name            String
+  description     String?
+  price           Float
+  stock           Int
+  vendorStand     VendorStand @relation(fields: [vendorStandId], references: [id])
+  vendorStandId   String
+
+  categories      ProductCategory[]
+  orderItems      OrderItem[]       
+  reviews         Review[]  
+  recentProducts  RecentProduct[]        
+
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 
   @@map("products")
 }
@@ -96,6 +120,20 @@ model Category {
   updatedAt   DateTime   @updatedAt
 
   @@map("categories")
+}
+
+model RecentProduct {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  viewedAt  DateTime @default(now())
+
+  @@unique([userId, productId]) // Ensures no duplicate entries for the same product by the same user
+  @@index([userId, viewedAt])   // Optimizes querying the most recent products for a user
+
+  @@map("recent_products")
 }
 
 model Order {
