@@ -45,7 +45,7 @@ router.patch(
 );
 
 router.patch(
-  '/update-my-profile',
+  '/:id/update-my-profile',
   auth(UserRole.ADMIN, UserRole.CUSTOMER, UserRole.VENDOR, UserRole.SUPER_ADMIN),
   fileUploader.upload.single('file'),
   (req: Request, res: Response, next: NextFunction) => {

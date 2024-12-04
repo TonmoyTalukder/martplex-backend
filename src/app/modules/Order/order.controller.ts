@@ -54,6 +54,16 @@ const updateOrder = catchAsync(async (req, res, next) => {
   });
 });
 
+const updateOrderItem = catchAsync(async (req, res, next) => {
+  const result = await orderService.updateOrderItem(req);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'Order Item updated successfully.',
+    data: result,
+  });
+});
+
 const deleteOrder = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
 
@@ -61,7 +71,19 @@ const deleteOrder = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
-    message: 'Category deleted successfully!',
+    message: 'Order deleted successfully!',
+    data: result,
+  });
+});
+
+const deleteOrderItem = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const result = await orderService.deleteOrderItem(id);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'Order Item deleted successfully!',
     data: result,
   });
 });
@@ -71,5 +93,7 @@ export const orderController = {
   getOrderByID,
   createOrder,
   updateOrder,
+  updateOrderItem,
   deleteOrder,
+  deleteOrderItem,
 };

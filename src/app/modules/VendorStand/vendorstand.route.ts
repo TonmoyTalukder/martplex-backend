@@ -50,7 +50,7 @@ router.post(
 );
 
 router.patch(
-  '/update-vendor-stand',
+  '/:id/update-vendor-stand',
   auth(
     UserRole.ADMIN,
     UserRole.VENDOR,

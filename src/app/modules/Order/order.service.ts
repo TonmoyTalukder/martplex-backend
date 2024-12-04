@@ -194,10 +194,88 @@ const deleteOrder = async (orderId: string): Promise<{ message: string }> => {
   return { message: 'Order deleted successfully.' };
 };
 
+const updateOrderItem = async (req: Request): Promise<{ message: string }> => {
+  const { orderItemId, quantity } = req.body;
+
+  if (!orderItemId) {
+    throw new Error('Order ID is required.');
+  }
+
+  const existingOrderItem = await prisma.orderItem.findUniqueOrThrow({
+    where: {
+      id: orderItemId,
+    },
+  });
+
+  const existingOrder = await prisma.order.findUniqueOrThrow({
+    where: {
+      id: existingOrderItem.orderId,
+      status: OrderStatus.PENDING,
+    },
+    include: {
+      items: true,
+    },
+  });
+
+  await prisma.orderItem.update({
+    where: { id: orderItemId },
+    data: {
+      quantity,
+    },
+  });
+
+  if (existingOrderItem.quantity === 0) {
+    // Delete the orderItem
+    await prisma.orderItem.delete({
+      where: { id: orderItemId },
+    });
+  }
+
+  return { message: 'Order Item updated successfully.' };
+};
+const deleteOrderItem = async (
+  orderItemId: string,
+): Promise<{ message: string }> => {
+  if (!orderItemId) {
+    throw new Error('Order ID is required.');
+  }
+
+  const existingOrderItem = await prisma.orderItem.findUniqueOrThrow({
+    where: {
+      id: orderItemId,
+    },
+  });
+
+  const existingOrder = await prisma.order.findUniqueOrThrow({
+    where: {
+      id: existingOrderItem.orderId,
+      status: OrderStatus.PENDING,
+    },
+    include: {
+      items: true,
+    },
+  });
+
+  await prisma.orderItem.delete({
+    where: { id: orderItemId },
+  });
+
+  if (existingOrder.items.length === 0) {
+    // Delete the Cart
+    await prisma.order.delete({
+      where: { id: existingOrder.id },
+    });
+  }
+
+  return { message: 'Order Item deleted successfully.' };
+};
+
 export const orderService = {
   getAllOrders,
   getOrderByID,
   createOrder,
   updateOrder,
+  updateOrderItem,
   deleteOrder,
+  deleteOrderItem,
 };

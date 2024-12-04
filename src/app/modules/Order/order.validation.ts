@@ -44,9 +44,20 @@ const deleteOrderSchema = z.object({
   orderId: z.string().uuid(),
 });
 
+const updateOrderItemSchema = z.object({
+  orderItemId: z.string().uuid('Invalid order item ID format.'),
+  quantity: z.number().min(1, 'Quantity must be at least 1.'),
+});
+
+const deleteOrderItemSchema = z.object({
+  orderItemId: z.string().uuid('Invalid order item ID format.'),
+});
+
 export const orderValidation = {
   getOrderByIDSchema,
   createOrderSchema,
   updateOrderSchema,
   deleteOrderSchema,
+  updateOrderItemSchema,
+  deleteOrderItemSchema,
 };

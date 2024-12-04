@@ -44,7 +44,7 @@ router.post(
 );
 
 router.patch(
-  '/update-recent-product',
+  '/:id/update-recent-product',
   auth(
     UserRole.ADMIN,
     UserRole.SUPER_ADMIN,

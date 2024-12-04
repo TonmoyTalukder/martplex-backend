@@ -32,7 +32,7 @@ router.post(
 );
 
 router.patch(
-  '/update-product',
+  '/:id/update-product',
   auth(UserRole.ADMIN, UserRole.VENDOR, UserRole.SUPER_ADMIN),
   fileUploader.upload.array('files', 10), // Allow multiple files (up to 10)
   (req: Request, res: Response, next: NextFunction) => {

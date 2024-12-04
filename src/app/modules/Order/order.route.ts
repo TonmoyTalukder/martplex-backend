@@ -20,14 +20,15 @@ router.get(
 );
 
 router.get(
-    '/', 
-    auth(
-        UserRole.SUPER_ADMIN,
-        UserRole.ADMIN,
-        UserRole.VENDOR,
-        UserRole.CUSTOMER,
-      ),
-    orderController.getAllOrders);
+  '/',
+  auth(
+    UserRole.SUPER_ADMIN,
+    UserRole.ADMIN,
+    UserRole.VENDOR,
+    UserRole.CUSTOMER,
+  ),
+  orderController.getAllOrders,
+);
 
 router.post(
   '/create-order',
@@ -37,7 +38,7 @@ router.post(
 );
 
 router.post(
-  '/update-order',
+  '/:id/update-order',
   auth(
     UserRole.SUPER_ADMIN,
     UserRole.ADMIN,
@@ -46,6 +47,18 @@ router.post(
   ),
   validateRequest(orderValidation.updateOrderSchema),
   orderController.updateOrder,
+);
+
+router.post(
+  '/order-item/:id/update',
+  auth(
+    UserRole.SUPER_ADMIN,
+    UserRole.ADMIN,
+    UserRole.VENDOR,
+    UserRole.CUSTOMER,
+  ),
+  validateRequest(orderValidation.updateOrderItemSchema),
+  orderController.updateOrderItem,
 );
 
 router.patch(
@@ -58,6 +71,18 @@ router.patch(
   ),
   validateRequest(orderValidation.deleteOrderSchema),
   orderController.deleteOrder,
+);
+
+router.patch(
+  '/order-item/:id/delete',
+  auth(
+    UserRole.ADMIN,
+    UserRole.SUPER_ADMIN,
+    UserRole.VENDOR,
+    UserRole.CUSTOMER,
+  ),
+  validateRequest(orderValidation.deleteOrderItemSchema),
+  orderController.deleteOrderItem,
 );
 
 export const orderRoutes = router;

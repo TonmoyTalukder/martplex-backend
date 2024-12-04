@@ -6,6 +6,7 @@ import { productRoutes } from '../modules/Product/product.route';
 import { recentProductRoutes } from '../modules/RecentProduct/recentproduct.route';
 import { categoryRoutes } from '../modules/Category/category.route';
 import { orderRoutes } from '../modules/Order/order.route';
+import { cartRoutes } from '../modules/Cart/cart.route';
 
 const router = express.Router();
 
@@ -17,6 +18,10 @@ const moduleRoutes = [
   {
     path: '/user',
     route: userRoutes,
+  },
+  {
+    path: '/vendor-stand',
+    route: vendorStandRoutes,
   },
   {
     path: '/product',
@@ -33,6 +38,10 @@ const moduleRoutes = [
   {
     path: '/order',
     route: orderRoutes,
+  },
+  {
+    path: '/cart',
+    route: cartRoutes,
   },
 ];
 

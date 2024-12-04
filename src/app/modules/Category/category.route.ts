@@ -24,7 +24,7 @@ router.post(
 );
 
 router.patch(
-  '/update-category',
+  '/:id/update-category',
   auth(UserRole.ADMIN, UserRole.VENDOR, UserRole.SUPER_ADMIN),
   validateRequest(categoryValidation.updateCategorySchema),
   categoryController.updateCategory,
