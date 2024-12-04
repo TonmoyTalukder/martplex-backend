@@ -28,7 +28,7 @@ model User {
   reviews        Review[]
   follows        Follow[]        @relation("UserFollows")
   recentProducts RecentProduct[]
-  Cart           Cart?
+  cart           Cart?
 
   @@index([name])
   @@index([status])
@@ -213,23 +213,6 @@ enum OrderStatus {
   CANCELED
 }
 
-model Coupon {
-  id            String   @id @unique @default(uuid())
-  code          String   @unique
-  vendorStandId String?
-  discount      Float
-  isActive      Boolean  @default(true)
-  expiresAt     DateTime
-  createdAt     DateTime @default(now())
-  flashSaleId   String?  @unique
-
-  vendorStand VendorStand? @relation("VendorCoupons", fields: [vendorStandId], references: [id], onDelete: Cascade)
-  flashSale   FlashSale?
-
-  @@index([vendorStandId])
-  @@map("coupons")
-}
-
 model Review {
   id            String  @id @unique @default(uuid())
   content       String
@@ -241,7 +224,7 @@ model Review {
   user        User         @relation(fields: [userId], references: [id])
   product     Product?     @relation(fields: [productId], references: [id])
   vendorStand VendorStand? @relation(fields: [vendorStandId], references: [id])
-  reply       Reply?
+  reply       Reply[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -321,6 +304,21 @@ enum PaymentStatus {
   FAILED
 }
 
+model Coupon {
+  id            String   @id @unique @default(uuid())
+  code          String   @unique
+  discount      Float
+  isActive      Boolean  @default(true)
+  expiresAt     DateTime
+  vendorStandId String?
+  createdAt     DateTime @default(now())
+
+  vendorStand VendorStand? @relation("VendorCoupons", fields: [vendorStandId], references: [id], onDelete: Cascade)
+
+  @@index([vendorStandId])
+  @@map("coupons")
+}
+
 model FlashSale {
   id          String   @id @unique @default(uuid())
   name        String
@@ -328,9 +326,8 @@ model FlashSale {
   discount    Float
   startsAt    DateTime
   endsAt      DateTime
-  couponId    String?  @unique
-
-  coupon Coupon? @relation(fields: [couponId], references: [id])
+  isActive    Boolean  @default(true)
+  coupon      String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

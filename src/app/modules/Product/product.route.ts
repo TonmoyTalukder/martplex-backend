@@ -9,15 +9,12 @@ import { productController } from './product.controller';
 const router = express.Router();
 
 router.get(
-    '/:id',
-    validateRequest(productValidation.getProductByIDSchema),
-    productController.getProductByID,
-  );
-  
-  router.get(
-    '/',
-    productController.getAllProducts,
-  );
+  '/:id',
+  validateRequest(productValidation.getProductByIDSchema),
+  productController.getProductByID,
+);
+
+router.get('/', productController.getAllProducts);
 
 router.post(
   '/create-product',
