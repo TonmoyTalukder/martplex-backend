@@ -8,7 +8,6 @@ import {
   vendorStandFilterableOptions,
 } from './vendorstand.constant';
 import pick from '../../../shared/pick';
-import { VendorStand } from '@prisma/client';
 
 const getAllVendorStands = catchAsync(async (req, res, next) => {
   const filters = pick(req.query, vendorStandFilterableFields);
@@ -75,7 +74,7 @@ const softDelete = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
-    message: 'Vendor Stand deleted successfuly!',
+    message: 'Vendor Stand deleted successfully!',
     data: result,
   });
 });

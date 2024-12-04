@@ -104,7 +104,7 @@ const softDelete = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
-    message: 'User deleted successfuly!',
+    message: 'User deleted successfully!',
     data: result,
   });
 });

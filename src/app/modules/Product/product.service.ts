@@ -21,6 +21,13 @@ const getAllProducts = async (params: any, options: IPaginationOptions) => {
   const andCondition: Prisma.ProductWhereInput[] = [
     {
       isDeleted: false,
+      categories: {
+        some: {
+          category: {
+            isDeleted: false,
+          },
+        },
+      },
     },
   ];
 
@@ -89,6 +96,13 @@ const getProductByID = async (req: Request) => {
           isDeleted: false,
         },
       },
+      categories: {
+        some: {
+          category: {
+            isDeleted: false,
+          },
+        },
+      },
     },
   });
 
@@ -113,20 +127,46 @@ const createProduct = async (
   const { name, description, price, stock, vendorStandId, categoryId } =
     req.body;
 
-  const result = await prisma.product.create({
-    data: {
-      name,
-      description,
-      images: imageUrls, // Save images as a JSON string
-      price,
-      stock,
-      vendorStandId,
-      categoryId,
-    },
-    include: {
-      vendorStand: true,
-      categories: true,
-    },
+  const result = await prisma.$transaction(async (prisma) => {
+    const product = await prisma.product.create({
+      data: {
+        name,
+        description,
+        images: imageUrls,
+        price,
+        stock,
+        vendorStandId,
+        categoryId,
+      },
+      include: {
+        vendorStand: true,
+        categories: true,
+      },
+    });
+
+    if (categoryId) {
+      try {
+        await prisma.category.findUniqueOrThrow({
+          where: {
+            id: categoryId,
+            isDeleted: false,
+          },
+        });
+
+        await prisma.productCategory.create({
+          data: {
+            productId: product.id,
+            categoryId,
+          },
+        });
+      } catch (error) {
+        throw new Error(
+          'Invalid categoryId: The specified category does not exist.',
+        );
+      }
+    }
+
+    return product;
   });
 
   return result;
@@ -137,6 +177,13 @@ const updateProduct = async (req: Request) => {
     where: {
       id: req.body.id,
       isDeleted: false,
+      categories: {
+        some: {
+          category: {
+            isDeleted: false,
+          },
+        },
+      },
     },
   });
 
@@ -173,6 +220,13 @@ const softDelete = async (id: string) => {
       vendorStand: {
         isDeleted: false,
         status: VendorStandStatus.ACTIVE,
+      },
+      categories: {
+        some: {
+          category: {
+            isDeleted: false,
+          },
+        },
       },
     },
   });

@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-  id                        String     @id @default(uuid())
+  id                        String     @id @unique @default(uuid())
   name                      String
   email                     String     @unique
   phoneNumber               String
@@ -23,12 +23,16 @@ model User {
   updatedAt                 DateTime   @updatedAt
   verificationCodeExpiresAt DateTime?
 
-  vendorStand               VendorStand?
-  orders                    Order[]    @relation("UserOrders")
-  reviews                   Review[]
-  follows                   Follow[]   @relation("UserFollows")
-  recentProducts            RecentProduct[]
+  vendorStand    VendorStand?
+  orders         Order[]         @relation("UserOrders")
+  reviews        Review[]
+  follows        Follow[]        @relation("UserFollows")
+  recentProducts RecentProduct[]
+  Cart           Cart?
 
+  @@index([name])
+  @@index([status])
+  @@index([email])
   @@map("users")
 }
 
@@ -47,21 +51,32 @@ enum UserStatus {
 }
 
 model VendorStand {
-  id          String            @id @default(uuid())
-  name        String
-  description String?
-  logo        String?
-  ownerId     String            @unique
-  owner       User              @relation(fields: [ownerId], references: [id])
-  isDeleted   Boolean           @default(false)
-  status      VendorStandStatus @default(ACTIVE)
-  products    Product[]
-  reviews     Review[]      
-  followers   Follow[]          @relation("VendorFollows")
+  id             String  @id @unique @default(uuid())
+  name           String
+  description    String?
+  logo           String?
+  ownerId        String  @unique
+  owner          User    @relation(fields: [ownerId], references: [id])
+  vendorSale     Boolean @default(false)
+  flashSale      Boolean @default(false)
+  vendorDiscount Int     @default(0)
+  isDeleted      Boolean @default(false)
 
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  status            VendorStandStatus   @default(ACTIVE)
+  products          Product[]
+  reviews           Review[]
+  followers         Follow[]            @relation("VendorFollows")
+  orders            Order[]             @relation("VendorOrders")
+  Coupon            Coupon[]            @relation("VendorCoupons")
+  payment           Payment?
+  Cart              Cart?
+  reportVendorStand ReportVendorStand[]
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+  @@index([status])
   @@map("vendor_stands")
 }
 
@@ -71,118 +86,287 @@ enum VendorStandStatus {
 }
 
 model Follow {
-  id           String       @id @default(uuid())
-  userId       String
-  user         User         @relation("UserFollows", fields: [userId], references: [id])
-  vendorId     String
-  vendor       VendorStand  @relation("VendorFollows", fields: [vendorId], references: [id])
-  createdAt    DateTime     @default(now())
+  id        String      @id @unique @default(uuid())
+  userId    String      @unique
+  user      User        @relation("UserFollows", fields: [userId], references: [id])
+  vendorId  String      @unique
+  vendor    VendorStand @relation("VendorFollows", fields: [vendorId], references: [id])
+  createdAt DateTime    @default(now())
 
+  @@index([userId])
+  @@index([vendorId])
   @@map("follows")
 }
 
 model Product {
-  id              String     @id @default(uuid())
-  name            String
-  images          String[]
-  description     String?
-  price           Float
-  stock           Int
-  isDeleted       Boolean     @default(false)
-  vendorStand     VendorStand @relation(fields: [vendorStandId], references: [id])
-  vendorStandId   String
-  categoryId      String
-  categories      ProductCategory[]
-  orderItems      OrderItem[]       
-  reviews         Review[]  
-  recentProducts  RecentProduct[]        
+  id             String            @id @unique @default(uuid())
+  name           String
+  images         String[]
+  description    String?
+  price          Float
+  stock          Int
+  flashSale      Boolean           @default(false)
+  vendorSale     Boolean           @default(false)
+  onSale         Boolean           @default(false)
+  discount       Int               @default(0)
+  isDeleted      Boolean           @default(false)
+  vendorStandId  String            @unique
+  vendorStand    VendorStand       @relation(fields: [vendorStandId], references: [id], onDelete: Cascade)
+  categoryId     String
+  categories     ProductCategory[]
+  orderItems     OrderItem[]
+  reviews        Review[]
+  recentProducts RecentProduct[]
+  CartItem       CartItem[]
+  reportProduct  ReportProduct[]
 
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
+  @@index([name])
+  @@index([vendorStandId, name])
   @@map("products")
 }
 
 model ProductCategory {
-  productId  String
-  categoryId String
-  product    Product  @relation(fields: [productId], references: [id])
-  category   Category @relation(fields: [categoryId], references: [id])
+  productId  String   @unique
+  categoryId String   @unique
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@id([productId, categoryId])
   @@map("product_categories")
 }
 
 model Category {
-  id          String     @id @default(uuid())
+  id          String            @id @unique @default(uuid())
   name        String
   description String?
+  isDeleted   Boolean           @default(false)
   products    ProductCategory[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
   @@map("categories")
 }
 
 model RecentProduct {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  productId String
-  product   Product  @relation(fields: [productId], references: [id])
+  id        String   @id @unique @default(uuid())
+  userId    String   @unique
+  productId String   @unique
   viewedAt  DateTime @default(now())
 
-  @@unique([userId, productId]) // Ensures no duplicate entries for the same product by the same user
-  @@index([userId, viewedAt])   // Optimizes querying the most recent products for a user
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
 
+  @@unique([userId, productId]) // Ensures no duplicate entries for the same product by the same user
+  @@index([userId, viewedAt]) // Optimizes querying the most recent products for a user
   @@map("recent_products")
 }
 
 model Order {
-  id          String     @id @default(uuid())
-  userId      String
-  user        User       @relation("UserOrders", fields: [userId], references: [id], onDelete: Cascade)
-  status      OrderStatus
-  totalAmount Float
-  items       OrderItem[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id            String @id @unique @default(uuid())
+  userId        String
+  vendorStandId String
+  totalAmount   Float
 
+  user        User        @relation("UserOrders", fields: [userId], references: [id], onDelete: Cascade)
+  vendorStand VendorStand @relation("VendorOrders", fields: [vendorStandId], references: [id], onDelete: Cascade)
+  status      OrderStatus
+  items       OrderItem[]
+  payment     Payment?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([vendorStandId])
   @@map("orders")
 }
 
 model OrderItem {
-  id          String  @id @default(uuid())
-  orderId     String
-  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  productId   String
-  product     Product @relation(fields: [productId], references: [id])
-  quantity    Int
-  price       Float
+  id        String @id @unique @default(uuid())
+  orderId   String @unique
+  productId String @unique
+  quantity  Int
+  price     Float
 
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([orderId, productId])
+  @@index([orderId])
   @@map("order_items")
-}
-
-model Review {
-  id           String       @id @default(uuid())
-  content      String
-  rating       Int          @default(0)
-  userId       String
-  user         User         @relation(fields: [userId], references: [id])
-  productId    String?
-  product      Product?     @relation(fields: [productId], references: [id])
-  vendorStandId String?
-  vendorStand  VendorStand? @relation(fields: [vendorStandId], references: [id])
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-
-  @@map("reviews")
 }
 
 enum OrderStatus {
   PENDING
+  CONFIRM
   PROCESSING
   SHIPPED
   DELIVERED
   CANCELED
+}
+
+model Coupon {
+  id            String   @id @unique @default(uuid())
+  code          String   @unique
+  vendorStandId String?
+  discount      Float
+  isActive      Boolean  @default(true)
+  expiresAt     DateTime
+  createdAt     DateTime @default(now())
+  flashSaleId   String?  @unique
+
+  vendorStand VendorStand? @relation("VendorCoupons", fields: [vendorStandId], references: [id], onDelete: Cascade)
+  flashSale   FlashSale?
+
+  @@index([vendorStandId])
+  @@map("coupons")
+}
+
+model Review {
+  id            String  @id @unique @default(uuid())
+  content       String
+  rating        Int     @default(0)
+  userId        String
+  productId     String?
+  vendorStandId String?
+
+  user        User         @relation(fields: [userId], references: [id])
+  product     Product?     @relation(fields: [productId], references: [id])
+  vendorStand VendorStand? @relation(fields: [vendorStandId], references: [id])
+  reply       Reply?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+  @@map("reviews")
+}
+
+model Reply {
+  id       String @id @unique @default(uuid())
+  content  String
+  reviewId String @unique
+
+  review Review @relation(fields: [reviewId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([reviewId])
+  @@map("replies")
+}
+
+model ReportProduct {
+  id        String @id @unique @default(uuid())
+  content   String
+  productId String @unique
+
+  product Product @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+  @@map("reportProducts")
+}
+
+model ReportVendorStand {
+  id            String @id @unique @default(uuid())
+  content       String
+  vendorStandId String @unique
+
+  vendorStand VendorStand @relation(fields: [vendorStandId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([vendorStandId])
+  @@map("reportVendorStands")
+}
+
+model Payment {
+  id            String @id @unique @default(uuid())
+  orderId       String @unique
+  vendorStandId String @unique
+  amount        Float
+
+  order         Order         @relation(fields: [orderId], references: [id])
+  vendorStand   VendorStand   @relation(fields: [vendorStandId], references: [id], onDelete: Cascade)
+  paymentMethod PaymentMethod
+  status        PaymentStatus
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([vendorStandId])
+  @@map("payments")
+}
+
+enum PaymentMethod {
+  Online
+  COD
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+model FlashSale {
+  id          String   @id @unique @default(uuid())
+  name        String
+  description String
+  discount    Float
+  startsAt    DateTime
+  endsAt      DateTime
+  couponId    String?  @unique
+
+  coupon Coupon? @relation(fields: [couponId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([startsAt, endsAt])
+  @@map("flashSales")
+}
+
+model Cart {
+  id       String @id @unique @default(uuid())
+  userId   String @unique
+  vendorId String @unique // Restrict to single vendor
+
+  user   User        @relation(fields: [userId], references: [id])
+  vendor VendorStand @relation(fields: [vendorId], references: [id])
+  items  CartItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("carts")
+}
+
+model CartItem {
+  id        String @id @unique @default(uuid())
+  cartId    String @unique
+  productId String @unique
+  quantity  Int
+
+  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([cartId])
+  @@map("cartItems")
 }

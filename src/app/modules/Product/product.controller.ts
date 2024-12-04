@@ -61,7 +61,7 @@ const softDelete = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
-    message: 'Vendor Stand deleted successfuly!',
+    message: 'Vendor Stand deleted successfully!',
     data: result,
   });
 });

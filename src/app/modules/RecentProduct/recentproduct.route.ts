@@ -10,24 +10,49 @@ const router = express.Router();
 
 router.get(
   '/:id',
+  auth(
+    UserRole.ADMIN,
+    UserRole.SUPER_ADMIN,
+    UserRole.VENDOR,
+    UserRole.CUSTOMER,
+  ),
   validateRequest(recentProductValidation.getRecentProductByIDSchema),
   recentProductController.getRecentProductByID,
 );
 
-router.get('/', recentProductController.getAllRecentProducts);
+router.get(
+  '/',
+  auth(
+    UserRole.ADMIN,
+    UserRole.SUPER_ADMIN,
+    UserRole.VENDOR,
+    UserRole.CUSTOMER,
+  ),
+  recentProductController.getAllRecentProducts,
+);
 
 router.post(
   '/create-recent-product',
-  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.VENDOR),
+  auth(
+    UserRole.ADMIN,
+    UserRole.SUPER_ADMIN,
+    UserRole.VENDOR,
+    UserRole.CUSTOMER,
+  ),
   validateRequest(recentProductValidation.createRecentProductSchema),
   recentProductController.createRecentProduct,
 );
 
 router.patch(
   '/update-recent-product',
-  auth(UserRole.ADMIN, UserRole.VENDOR, UserRole.SUPER_ADMIN),
+  auth(
+    UserRole.ADMIN,
+    UserRole.SUPER_ADMIN,
+    UserRole.VENDOR,
+    UserRole.CUSTOMER,
+  ),
   validateRequest(recentProductValidation.updateRecentProductSchema),
   recentProductController.updateRecentProduct,
 );
 
-export const productRoutes = router;
+export const recentProductRoutes = router;
