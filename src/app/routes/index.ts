@@ -9,6 +9,7 @@ import { orderRoutes } from '../modules/Order/order.route';
 import { cartRoutes } from '../modules/Cart/cart.route';
 import { couponRoutes } from '../modules/Coupon/coupon.route';
 import { flashSaleRoutes } from '../modules/FlashSale/flashSale.route';
+import { reviewReplyRoutes } from '../modules/ReviewReply/reviewReply.route';
 
 const router = express.Router();
 
@@ -52,6 +53,10 @@ const moduleRoutes = [
   {
     path: '/flash-sale',
     route: flashSaleRoutes,
+  },
+  {
+    path: '/review',
+    route: reviewReplyRoutes,
   },
 ];
 

@@ -29,6 +29,7 @@ model User {
   follows        Follow[]        @relation("UserFollows")
   recentProducts RecentProduct[]
   cart           Cart?
+  Reply          Reply[]
 
   @@index([name])
   @@index([status])
@@ -99,20 +100,21 @@ model Follow {
 }
 
 model Product {
-  id             String            @id @unique @default(uuid())
-  name           String
-  images         String[]
-  description    String?
-  price          Float
-  stock          Int
-  flashSale      Boolean           @default(false)
-  vendorSale     Boolean           @default(false)
-  onSale         Boolean           @default(false)
-  discount       Int               @default(0)
-  isDeleted      Boolean           @default(false)
-  vendorStandId  String            @unique
+  id            String   @id @unique @default(uuid())
+  name          String
+  images        String[]
+  description   String?
+  price         Float
+  stock         Int
+  flashSale     Boolean  @default(false)
+  vendorSale    Boolean  @default(false)
+  onSale        Boolean  @default(false)
+  discount      Int      @default(0)
+  isDeleted     Boolean  @default(false)
+  vendorStandId String   @unique
+  categoryId    String
+
   vendorStand    VendorStand       @relation(fields: [vendorStandId], references: [id], onDelete: Cascade)
-  categoryId     String
   categories     ProductCategory[]
   orderItems     OrderItem[]
   reviews        Review[]
@@ -180,6 +182,7 @@ model Order {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  Review    Review?
 
   @@index([userId])
   @@index([vendorStandId])
@@ -214,16 +217,18 @@ enum OrderStatus {
 }
 
 model Review {
-  id            String  @id @unique @default(uuid())
+  id            String @id @unique @default(uuid())
   content       String
-  rating        Int     @default(0)
+  rating        Int    @default(0)
   userId        String
-  productId     String?
-  vendorStandId String?
+  productId     String
+  vendorStandId String
+  orderId       String @unique
 
   user        User         @relation(fields: [userId], references: [id])
   product     Product?     @relation(fields: [productId], references: [id])
   vendorStand VendorStand? @relation(fields: [vendorStandId], references: [id])
+  order       Order        @relation(fields: [orderId], references: [id])
   reply       Reply[]
 
   createdAt DateTime @default(now())
@@ -236,8 +241,10 @@ model Review {
 model Reply {
   id       String @id @unique @default(uuid())
   content  String
+  userId   String @unique
   reviewId String @unique
 
+  user   User   @relation(fields: [userId], references: [id])
   review Review @relation(fields: [reviewId], references: [id])
 
   createdAt DateTime @default(now())

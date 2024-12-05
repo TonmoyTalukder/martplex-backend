@@ -10,17 +10,6 @@ const deleteOldCarts = async () => {
   });
 };
 
-async function withRetries<T>(task: () => Promise<T>, retries = 3) {
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    try {
-      return await task();
-    } catch (error) {
-      if (attempt === retries) throw error;
-      console.warn(`Retry ${attempt} failed, retrying...`);
-    }
-  }
-}
-
 const deleteExpiredCoupons = async () => {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -60,6 +49,17 @@ const updateFlashSaleStatus = async () => {
 
   await Promise.all(flashSaleUpdates);
 };
+
+async function withRetries<T>(task: () => Promise<T>, retries = 3) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await task();
+    } catch (error) {
+      if (attempt === retries) throw error;
+      console.warn(`Retry ${attempt} failed, retrying...`);
+    }
+  }
+}
 
 cron.schedule('0 0 * * *', async () => {
   const now = new Date().toISOString();

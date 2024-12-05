@@ -67,6 +67,13 @@ const getAllProducts = async (params: any, options: IPaginationOptions) => {
         : {
             createdAt: 'desc',
           },
+    include: {
+      vendorStand: true,
+      categories: true,
+      orderItems: true,
+      reviews: true,
+      reportProduct: true,
+    },
   });
 
   const total = await prisma.product.count({
@@ -103,6 +110,13 @@ const getProductByID = async (req: Request) => {
           },
         },
       },
+    },
+    include: {
+      vendorStand: true,
+      categories: true,
+      orderItems: true,
+      reviews: true,
+      reportProduct: true,
     },
   });
 
