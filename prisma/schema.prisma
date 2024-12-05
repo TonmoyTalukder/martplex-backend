@@ -23,13 +23,15 @@ model User {
   updatedAt                 DateTime   @updatedAt
   verificationCodeExpiresAt DateTime?
 
-  vendorStand    VendorStand?
-  orders         Order[]         @relation("UserOrders")
-  reviews        Review[]
-  follows        Follow[]        @relation("UserFollows")
-  recentProducts RecentProduct[]
-  cart           Cart?
-  Reply          Reply[]
+  vendorStand       VendorStand?
+  orders            Order[]            @relation("UserOrders")
+  reviews           Review[]
+  follows           Follow[]           @relation("UserFollows")
+  recentProducts    RecentProduct[]
+  cart              Cart?
+  Reply             Reply[]
+  ReportProduct     ReportProduct[]
+  ReportVendorStand ReportVendorStand[]
 
   @@index([name])
   @@index([status])
@@ -257,8 +259,10 @@ model Reply {
 model ReportProduct {
   id        String @id @unique @default(uuid())
   content   String
+  userId    String @unique
   productId String @unique
 
+  user    User    @relation(fields: [userId], references: [id])
   product Product @relation(fields: [productId], references: [id])
 
   createdAt DateTime @default(now())
@@ -271,8 +275,10 @@ model ReportProduct {
 model ReportVendorStand {
   id            String @id @unique @default(uuid())
   content       String
+  userId        String @unique
   vendorStandId String @unique
 
+  user        User        @relation(fields: [userId], references: [id])
   vendorStand VendorStand @relation(fields: [vendorStandId], references: [id])
 
   createdAt DateTime @default(now())

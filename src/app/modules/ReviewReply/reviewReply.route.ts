@@ -9,7 +9,7 @@ const router = express.Router();
 
 router.get(
   '/:id',
-  auth(UserRole.VENDOR),
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.VENDOR, UserRole.CUSTOMER),
   validateRequest(reviewReplyValidation.getReviewReplyByIDSchema),
   reviewReplyController.getReviewReplyByID,
 );

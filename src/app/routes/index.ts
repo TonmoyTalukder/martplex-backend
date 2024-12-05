@@ -10,6 +10,8 @@ import { cartRoutes } from '../modules/Cart/cart.route';
 import { couponRoutes } from '../modules/Coupon/coupon.route';
 import { flashSaleRoutes } from '../modules/FlashSale/flashSale.route';
 import { reviewReplyRoutes } from '../modules/ReviewReply/reviewReply.route';
+import { reportProductRoutes } from '../modules/ReportProduct/reportProduct.route';
+import { reportVendorStandRoutes } from '../modules/ReportVendorStand/reportVendorStand.route';
 
 const router = express.Router();
 
@@ -57,6 +59,14 @@ const moduleRoutes = [
   {
     path: '/review',
     route: reviewReplyRoutes,
+  },
+  {
+    path: '/report/product',
+    route: reportProductRoutes,
+  },
+  {
+    path: '/report/vendor-stand',
+    route: reportVendorStandRoutes,
   },
 ];
 
