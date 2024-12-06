@@ -37,7 +37,7 @@ router.post(
   orderController.createOrder,
 );
 
-router.post(
+router.put(
   '/:id/update-order',
   auth(
     UserRole.SUPER_ADMIN,

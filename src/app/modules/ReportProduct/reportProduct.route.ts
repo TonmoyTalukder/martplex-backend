@@ -23,7 +23,7 @@ router.post(
   reportProductController.createReportProduct,
 );
 
-router.post(
+router.put(
   '/:id/update',
   auth(UserRole.CUSTOMER),
   validateRequest(reportProductValidation.updateReportProductSchema),

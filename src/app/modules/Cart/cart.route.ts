@@ -28,7 +28,7 @@ router.post(
   cartController.updateCart,
 );
 
-router.post(
+router.put(
   'cart-item/:id/update',
   auth(UserRole.VENDOR, UserRole.CUSTOMER),
   validateRequest(cartValidation.updateCartItemSchema),

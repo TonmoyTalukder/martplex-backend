@@ -24,4 +24,10 @@ export default {
     email: process.env.SENDER_EMAIL,
     app_pass: process.env.SENDER_APP_PASS,
   },
+  payment: {
+    baseURL: process.env.PAYMENT_URL,
+    storeID: process.env.STORE_ID,
+    signatureKey: process.env.SIGNATURE_KEY,
+    paymentVerifyURL: process.env.PAYMENT_VERIFY_URL,
+  },
 };

@@ -23,7 +23,7 @@ router.post(
   reportVendorStandController.createReportVendorStand,
 );
 
-router.post(
+router.put(
   '/:id/update',
   auth(UserRole.CUSTOMER),
   validateRequest(reportVendorStandValidation.updateReportVendorStandSchema),

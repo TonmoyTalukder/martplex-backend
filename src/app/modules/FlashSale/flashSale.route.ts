@@ -23,7 +23,7 @@ router.post(
   flashSaleController.createFlashSale,
 );
 
-router.post(
+router.put(
   '/:id/update',
   auth(UserRole.VENDOR),
   validateRequest(flashSaleValidation.updateFlashSaleSchema),

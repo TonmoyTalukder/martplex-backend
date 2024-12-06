@@ -30,7 +30,7 @@ router.post(
   reviewReplyController.createReply,
 );
 
-router.post(
+router.put(
   '/:id/update',
   auth(UserRole.CUSTOMER),
   validateRequest(reviewReplyValidation.updateReviewSchema),

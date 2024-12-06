@@ -4,6 +4,7 @@ import { Request } from 'express';
 import { IPaginationOptions } from '../../interfaces/pagination';
 import { paginationHelper } from '../../../helpers/paginationHelper';
 import { orderSearchableFields } from './order.constant';
+import { paymentService } from '../Payment/payment.service';
 
 const getAllOrders = async (params: any, options: IPaginationOptions) => {
   const { limit, page, skip, sortBy, sortOrder } =
@@ -111,6 +112,13 @@ const createOrder = async (
       ),
     );
 
+    await paymentService.createPayment(
+      order.id,
+      vendorStandId,
+      totalAmount,
+      // paymentMethod,
+    );
+
     await prisma.cart.delete({
       where: {
         id: cartId,
@@ -143,6 +151,9 @@ const updateOrder = async (
       data: {
         status,
         totalAmount,
+      },
+      include: {
+        items: true,
       },
     });
 
@@ -179,6 +190,17 @@ const deleteOrder = async (orderId: string): Promise<{ message: string }> => {
     throw new Error('Order ID is required.');
   }
 
+  await prisma.order.findUniqueOrThrow({
+    where: { id: orderId },
+    include: {
+      items: {
+        include: {
+          product: true,
+        },
+      },
+    },
+  });
+
   await prisma.$transaction(async (prisma) => {
     // Delete all related OrderItems
     await prisma.orderItem.deleteMany({
@@ -207,7 +229,7 @@ const updateOrderItem = async (req: Request): Promise<{ message: string }> => {
     },
   });
 
-  const existingOrder = await prisma.order.findUniqueOrThrow({
+  await prisma.order.findUniqueOrThrow({
     where: {
       id: existingOrderItem.orderId,
       status: OrderStatus.PENDING,
@@ -233,6 +255,7 @@ const updateOrderItem = async (req: Request): Promise<{ message: string }> => {
 
   return { message: 'Order Item updated successfully.' };
 };
+
 const deleteOrderItem = async (
   orderItemId: string,
 ): Promise<{ message: string }> => {
@@ -256,16 +279,22 @@ const deleteOrderItem = async (
     },
   });
 
-  await prisma.orderItem.delete({
+  const orderItem = await prisma.orderItem.findUniqueOrThrow({
     where: { id: orderItemId },
   });
 
-  if (existingOrder.items.length === 0) {
-    // Delete the Cart
-    await prisma.order.delete({
-      where: { id: existingOrder.id },
+  await prisma.$transaction(async (prisma) => {
+    await prisma.orderItem.delete({
+      where: { id: orderItemId },
     });
-  }
+
+    if (existingOrder.items.length === 0) {
+      // Delete the Cart
+      await prisma.order.delete({
+        where: { id: existingOrder.id },
+      });
+    }
+  });
 
   return { message: 'Order Item deleted successfully.' };
 };

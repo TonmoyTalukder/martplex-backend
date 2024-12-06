@@ -12,6 +12,7 @@ import { flashSaleRoutes } from '../modules/FlashSale/flashSale.route';
 import { reviewReplyRoutes } from '../modules/ReviewReply/reviewReply.route';
 import { reportProductRoutes } from '../modules/ReportProduct/reportProduct.route';
 import { reportVendorStandRoutes } from '../modules/ReportVendorStand/reportVendorStand.route';
+import { paymentRoutes } from '../modules/Payment/payment.route';
 
 const router = express.Router();
 
@@ -67,6 +68,10 @@ const moduleRoutes = [
   {
     path: '/report/vendor-stand',
     route: reportVendorStandRoutes,
+  },
+  {
+    path: '/payment',
+    route: paymentRoutes,
   },
 ];
 

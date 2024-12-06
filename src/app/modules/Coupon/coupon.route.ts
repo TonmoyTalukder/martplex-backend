@@ -23,7 +23,7 @@ router.post(
   couponController.createCoupon,
 );
 
-router.post(
+router.put(
   '/:id/update-coupon',
   auth(UserRole.VENDOR),
   validateRequest(couponValidation.updateCouponSchema),

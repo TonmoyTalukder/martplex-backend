@@ -24,9 +24,9 @@ model User {
   verificationCodeExpiresAt DateTime?
 
   vendorStand       VendorStand?
-  orders            Order[]            @relation("UserOrders")
+  orders            Order[]             @relation("UserOrders")
   reviews           Review[]
-  follows           Follow[]           @relation("UserFollows")
+  follows           Follow[]            @relation("UserFollows")
   recentProducts    RecentProduct[]
   cart              Cart?
   Reply             Reply[]
@@ -290,13 +290,14 @@ model ReportVendorStand {
 
 model Payment {
   id            String @id @unique @default(uuid())
+  transactionId String? @unique
   orderId       String @unique
   vendorStandId String @unique
   amount        Float
 
   order         Order         @relation(fields: [orderId], references: [id])
-  vendorStand   VendorStand   @relation(fields: [vendorStandId], references: [id], onDelete: Cascade)
-  paymentMethod PaymentMethod
+  vendorStand   VendorStand   @relation(fields: [vendorStandId], references: [id])
+  paymentMethod PaymentMethod?
   status        PaymentStatus
 
   createdAt DateTime @default(now())
