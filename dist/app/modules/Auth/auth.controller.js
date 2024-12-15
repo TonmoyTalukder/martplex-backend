@@ -33,14 +33,30 @@ const registerUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, v
         },
     });
 }));
+const verifyRequest = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield auth_service_1.authServices.verifyRequest(req.body);
+    (0, responseHelper_1.sendResponse)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: 'User verification code sent successfully!',
+        data: {
+            accessToken: result,
+        },
+    });
+}));
 const verifyUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield auth_service_1.authServices.verifyUser(req.body);
+    const { refreshToken } = result;
+    res.cookie('refreshToken', refreshToken, {
+        secure: false,
+        httpOnly: true,
+    });
     (0, responseHelper_1.sendResponse)(res, {
         statusCode: http_status_codes_1.StatusCodes.OK,
         success: true,
         message: 'User verified successfully!',
         data: {
-            accessToken: result,
+            accessToken: result.accessToken,
         },
     });
 }));
@@ -57,6 +73,7 @@ const loginUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void
         message: 'Logged in successfully!',
         data: {
             accessToken: result.accessToken,
+            user: result.foundUser,
         },
     });
 }));
@@ -90,7 +107,8 @@ const forgotPassword = (0, catchAsync_1.default)((req, res) => __awaiter(void 0,
     });
 }));
 const resetPassword = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const token = req.headers.authorization || '';
+    // const token = req.headers.authorization || '';
+    const { token } = req.params || '';
     yield auth_service_1.authServices.resetPassword(token, req.body);
     (0, responseHelper_1.sendResponse)(res, {
         statusCode: http_status_codes_1.StatusCodes.OK,
@@ -101,6 +119,7 @@ const resetPassword = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, 
 }));
 exports.authControllers = {
     registerUser,
+    verifyRequest,
     verifyUser,
     loginUser,
     refreshToken,

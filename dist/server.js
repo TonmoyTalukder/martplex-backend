@@ -17,7 +17,7 @@ const config_1 = __importDefault(require("./app/config"));
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         const server = app_1.default.listen(config_1.default.port, () => {
-            console.log(`MartPlex Server is running on port ${config_1.default.port}`);
+            console.log(`MartPlex server is running on port ${config_1.default.port}`);
         });
     });
 }

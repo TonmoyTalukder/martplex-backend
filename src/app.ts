@@ -8,7 +8,13 @@ import cookieParser from 'cookie-parser';
 const app: Application = express();
 
 // cors
-app.use(cors());
+// app.use(cors());
+app.use(
+  cors({
+    origin: 'http://localhost:3000', 
+    credentials: true, // Allow credentials
+  }),
+);
 
 // parser
 app.use(cookieParser());
@@ -17,9 +23,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // api
 app.get('/', (req: Request, res: Response) => {
-    res.send({
-        message: "MartPlex server..."
-    })
+  res.send({
+    message: 'MartPlex server...',
+  });
 });
 
 app.use('/api/', router);

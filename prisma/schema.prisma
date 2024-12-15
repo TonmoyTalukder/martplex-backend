@@ -23,7 +23,7 @@ model User {
   updatedAt                 DateTime   @updatedAt
   verificationCodeExpiresAt DateTime?
 
-  vendorStand       VendorStand?
+  vendorStand       VendorStand[]
   orders            Order[]             @relation("UserOrders")
   reviews           Review[]
   follows           Follow[]            @relation("UserFollows")
@@ -58,7 +58,7 @@ model VendorStand {
   name           String
   description    String?
   logo           String?
-  ownerId        String  @unique
+  ownerId        String  
   owner          User    @relation(fields: [ownerId], references: [id])
   vendorSale     Boolean @default(false)
   flashSale      Boolean @default(false)

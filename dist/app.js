@@ -11,7 +11,11 @@ const notFound_1 = require("./app/middlewares/notFound");
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const app = (0, express_1.default)();
 // cors
-app.use((0, cors_1.default)());
+// app.use(cors());
+app.use((0, cors_1.default)({
+    origin: 'http://localhost:3000',
+    credentials: true, // Allow credentials
+}));
 // parser
 app.use((0, cookie_parser_1.default)());
 app.use(express_1.default.json());
@@ -19,7 +23,7 @@ app.use(express_1.default.urlencoded({ extended: true }));
 // api
 app.get('/', (req, res) => {
     res.send({
-        message: "MartPlex server..."
+        message: 'MartPlex server...',
     });
 });
 app.use('/api/', routes_1.default);

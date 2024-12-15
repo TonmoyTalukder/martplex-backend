@@ -14,7 +14,7 @@ export const createVendorStandSchema = z.object({
 });
 
 export const getVendorStandByIDSchema = z.object({
-  id: z.string().uuid('Vendor Stand ID must be a valid UUID'),
+  id: z.string().uuid('Vendor Stand ID must be a valid UUID').optional(),
 });
 
 export const updateVendorStandSchema = z.object({
@@ -29,9 +29,7 @@ export const updateVendorStandSchema = z.object({
     .max(500, 'Description cannot exceed 500 characters')
     .optional(),
   logo: z.string().url('Logo must be a valid URL').optional(),
-  status: z
-    .enum(['ACTIVE', 'INACTIVE', 'BLACKLISTED', 'PENDING'])
-    .optional(),
+  status: z.enum(['ACTIVE', 'INACTIVE', 'BLACKLISTED', 'PENDING']).optional(),
 });
 
 export const blacklistVendorStandSchema = z.object({
@@ -39,9 +37,9 @@ export const blacklistVendorStandSchema = z.object({
   blacklist: z.boolean(),
 });
 
-export const softDeleteVendorStandSchema = z.object({
-  id: z.string().uuid('Vendor Stand ID must be a valid UUID'),
-});
+// export const softDeleteVendorStandSchema = z.object({
+//   id: z.string().uuid('Vendor Stand ID must be a valid UUID'),
+// });
 
 export const followVendorStandSchema = z.object({
   userId: z.string().uuid('User ID must be a valid UUID'),
@@ -63,7 +61,7 @@ export const vendorStandValidation = {
   getVendorStandByIDSchema,
   updateVendorStandSchema,
   blacklistVendorStandSchema,
-  softDeleteVendorStandSchema,
+  // softDeleteVendorStandSchema,
   followVendorStandSchema,
   getVendorStandFollowersSchema,
   getFollowedVendorStandsSchema,

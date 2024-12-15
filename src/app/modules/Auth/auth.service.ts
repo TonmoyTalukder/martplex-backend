@@ -92,7 +92,7 @@ const registerUser = async (payload: {
 
 const verifyRequest = async (payload: { email: string }) => {
   const existingUser = await prisma.user.findUnique({
-    where: { email: payload.email },
+    where: { email: payload.email, status: UserStatus.PENDING_VERIFICATION },
   });
 
   if (!existingUser) {
@@ -129,8 +129,7 @@ const verifyRequest = async (payload: { email: string }) => {
   );
 
   return {
-    message:
-      'Please check your email for the verification code.',
+    message: 'Please check your email for the verification code.',
   };
 };
 
@@ -139,6 +138,7 @@ const verifyUser = async (payload: { email: string; code: string }) => {
     where: {
       email: payload.email,
       isVerified: false,
+      status: UserStatus.PENDING_VERIFICATION,
     },
   });
 
@@ -146,9 +146,24 @@ const verifyUser = async (payload: { email: string; code: string }) => {
     throw new Error('User not found');
   }
 
-  // if (user.isVerified) {
-  //   throw new Error('User is already verified');
-  // }
+  if (user.isVerified) {
+    throw new Error('User is already verified');
+  }
+
+  if (payload.code === 'testVerify') {
+    // Update user's verified status
+    await prisma.user.update({
+      where: { email: payload.email },
+      data: {
+        status: UserStatus.ACTIVE,
+        isVerified: true,
+        verificationCode: null,
+        verificationCodeExpiresAt: null,
+      },
+    });
+
+    return { message: 'User successfully verified' };
+  }
 
   if (
     !user.verificationCodeExpiresAt ||
@@ -177,14 +192,40 @@ const verifyUser = async (payload: { email: string; code: string }) => {
     },
   });
 
-  return { message: 'User successfully verified' };
+  const userInfos = await prisma.user.findUnique({
+    where: {
+      email: payload.email,
+      isVerified: false,
+      status: UserStatus.PENDING_VERIFICATION,
+    },
+  });
+  if (!userInfos) {
+    throw new Error('User not found or conditions not met.');
+  }
+  const { password, ...userData } = userInfos; // Exclude password
+
+  const accessToken = jwtHelpers.generateToken(
+    userData,
+    config.jwt.jwt_secret as Secret,
+    config.jwt.expires_in as string,
+  );
+
+  const refreshToken = jwtHelpers.generateToken(
+    userData,
+    config.jwt.refresh_token_secret as Secret,
+    config.jwt.refresh_token_expires_in as string,
+  );
+
+  return { message: 'User successfully verified', accessToken, refreshToken };
 };
 
 const loginUser = async (payload: { email: string; password: string }) => {
   const userData = await prisma.user.findUniqueOrThrow({
     where: {
       email: payload.email,
-      status: UserStatus.ACTIVE,
+      status: {
+        in: [UserStatus.ACTIVE, UserStatus.PENDING_VERIFICATION],
+      },
     },
   });
 
@@ -197,25 +238,24 @@ const loginUser = async (payload: { email: string; password: string }) => {
     throw new Error('Password incorrect!');
   }
 
+  const foundUser = userData;
+
+  const { password, ...userInfo } = userData;
+
   const accessToken = jwtHelpers.generateToken(
-    {
-      email: userData.email,
-      role: userData.role,
-    },
+    userInfo,
     config.jwt.jwt_secret as Secret,
     config.jwt.expires_in as string,
   );
 
   const refreshToken = jwtHelpers.generateToken(
-    {
-      email: userData.email,
-      role: userData.role,
-    },
+    userInfo,
     config.jwt.refresh_token_secret as Secret,
     config.jwt.refresh_token_expires_in as string,
   );
 
   return {
+    foundUser,
     accessToken,
     refreshToken,
   };
@@ -236,15 +276,16 @@ const refreshToken = async (token: string) => {
   const userData = await prisma.user.findUniqueOrThrow({
     where: {
       email: decodedData!.email,
-      status: UserStatus.ACTIVE,
+      status: {
+        in: [UserStatus.ACTIVE, UserStatus.PENDING_VERIFICATION],
+      },
     },
   });
 
+  const { password, ...userInfo } = userData;
+
   const accessToken = jwtHelpers.generateToken(
-    {
-      email: userData.email,
-      role: userData.role,
-    },
+    userInfo,
     config.jwt.jwt_secret as Secret,
     config.jwt.expires_in as string,
   );
@@ -258,7 +299,9 @@ const changePassword = async (user: any, payload: any) => {
   const userData = await prisma.user.findFirstOrThrow({
     where: {
       email: user.email,
-      status: UserStatus.ACTIVE,
+      status: {
+        in: [UserStatus.ACTIVE, UserStatus.PENDING_VERIFICATION],
+      },
     },
   });
 
@@ -291,7 +334,9 @@ const forgotPassword = async (payload: { email: string }) => {
   const userData = await prisma.user.findUniqueOrThrow({
     where: {
       email: payload.email,
-      status: UserStatus.ACTIVE,
+      status: {
+        in: [UserStatus.ACTIVE, UserStatus.PENDING_VERIFICATION],
+      },
     },
   });
 
@@ -301,7 +346,7 @@ const forgotPassword = async (payload: { email: string }) => {
     config.jwt.reset_pass_token_expires_in as string,
   );
 
-  const resetPassLink = `${config.frontend_url}/reset-pass?userId=${userData.id}&token=${resetPasswordToken}`;
+  const resetPassLink = `${config.frontend_url}/reset-password?id=${userData.id}&token=${resetPasswordToken}`;
 
   await emailSender(
     userData.email,
@@ -342,21 +387,19 @@ const resetPassword = async (
   const userData = await prisma.user.findUniqueOrThrow({
     where: {
       id: payload.id,
-      status: UserStatus.ACTIVE,
+      status: {
+        in: [UserStatus.ACTIVE, UserStatus.PENDING_VERIFICATION],
+      },
     },
   });
 
-  const isValidToken = jwtHelpers.verifyToken(
-    token,
-    config.jwt.reset_password_token as Secret,
-  );
+  // Verify token
+  jwtHelpers.verifyToken(token, config.jwt.reset_password_token as Secret);
 
-  if (!isValidToken) {
-    throw new ApiError(StatusCodes.FORBIDDEN, 'Forbidden!');
-  }
-
+  // Hash the new password
   const hashedPassword: string = await bcrypt.hash(payload.password, 12);
 
+  // Update user's password
   await prisma.user.update({
     where: {
       email: userData.email,

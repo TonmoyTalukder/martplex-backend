@@ -47,7 +47,7 @@ const changeProfileStatus = catchAsync(async (req: Request, res: Response) => {
 const becomeVendor = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  const result = await userService.becomeVendor(id, req.body);
+  const result = await userService.becomeVendor(id);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
@@ -57,10 +57,10 @@ const becomeVendor = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getMyProfile = catchAsync(
-  async (req: Request & { user?: IAuthUser }, res: Response) => {
+  async (req: Request & { user?: User }, res: Response) => {
     const user = req.user;
 
-    const result = await userService.getMyProfile(user! as IAuthUser);
+    const result = await userService.getMyProfile(user! as User);
     sendResponse(res, {
       statusCode: StatusCodes.OK,
       success: true,
@@ -70,11 +70,25 @@ const getMyProfile = catchAsync(
   },
 );
 
+const getUserProfile = catchAsync(async (req: Request, res: Response) => {
+  const id = req.params.id;
+
+  const result = await userService.getUserProfile(id);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'User profile data fetched!',
+    data: result,
+  });
+});
+
 const updateMyProfile = catchAsync(
-  async (req: Request & { user?: IAuthUser }, res: Response) => {
+  async (req: Request & { user?: User }, res: Response) => {
     const user = req.user;
 
-    const result = await userService.updateMyProfile(user! as IAuthUser, req);
+    console.log('Found User: ', user);
+
+    const result = await userService.updateMyProfile(user! as User, req);
     sendResponse(res, {
       statusCode: StatusCodes.OK,
       success: true,
@@ -115,6 +129,7 @@ export const userController = {
   changeProfileStatus,
   becomeVendor,
   getMyProfile,
+  getUserProfile,
   updateMyProfile,
   blockUser,
   softDelete,

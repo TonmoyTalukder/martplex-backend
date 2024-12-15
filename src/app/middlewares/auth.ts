@@ -12,12 +12,18 @@ const auth = (...roles: string[]) => {
     next: NextFunction,
   ) => {
     try {
+      console.log(req.headers);
       let token = req.headers.authorization;
+
+      if (!token) {
+        token = req.cookies.accessToken;
+      }
 
       if (!token) {
         throw new ApiError(StatusCodes.UNAUTHORIZED, 'You are not authorized!');
       } else {
         token = token.replace('Bearer ', '');
+        console.log('Token: ', token);
 
         const verifiedUser = jwtHelpers.verifyToken(
           token,

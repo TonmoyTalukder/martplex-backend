@@ -28,7 +28,7 @@ const emailSender = (email, html) => __awaiter(void 0, void 0, void 0, function*
         },
     });
     const info = yield transporter.sendMail({
-        from: '"MarPlex Server" <tonmoytalukder.ai@gmail.com>', // sender address
+        from: '"MartPlex Server" <tonmoytalukder.ai@gmail.com>', // sender address
         replyTo: '"Tonmoy Talukder" <tonmoytalukder2000@gmail.com>',
         to: email, // list of receivers
         subject: 'RESET PASSWORD LINK', // Subject line

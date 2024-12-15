@@ -24,7 +24,9 @@ const getAllVendorStands = catchAsync(async (req, res, next) => {
 });
 
 const getVendorStandByID = catchAsync(async (req, res, next) => {
-  const result = await vendorStandService.getVendorStandByID(req);
+  const id = req.params.id;
+
+  const result = await vendorStandService.getVendorStandByID(id);
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,

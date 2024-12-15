@@ -60,6 +60,16 @@ const getAllVendorStands = async (params: any, options: IPaginationOptions) => {
         : {
             createdAt: 'desc',
           },
+    include: {
+      owner: true,
+    },
+  });
+
+  const sanitizedResult = result.map((vendorStand) => {
+    if (vendorStand.owner) {
+      delete (vendorStand.owner as { password?: string }).password;
+    }
+    return vendorStand;
   });
 
   const total = await prisma.vendorStand.count({
@@ -72,14 +82,15 @@ const getAllVendorStands = async (params: any, options: IPaginationOptions) => {
       limit,
       total,
     },
-    data: result,
+    data: sanitizedResult,
   };
 };
 
-const getVendorStandByID = async (req: Request) => {
+const getVendorStandByID = async (id: string) => {
+  console.log('Vendor Stand ID: ', id);
   const vendorStandInfo = await prisma.vendorStand.findUniqueOrThrow({
     where: {
-      id: req.body.id,
+      id,
       status: VendorStandStatus.ACTIVE,
       isDeleted: false,
       owner: {
@@ -87,7 +98,14 @@ const getVendorStandByID = async (req: Request) => {
         isDeleted: false,
       },
     },
+    include: {
+      owner: true,
+    },
   });
+
+  if (vendorStandInfo.owner) {
+    delete (vendorStandInfo.owner as { password?: string }).password;
+  }
 
   return { vendorStandInfo };
 };
@@ -95,14 +113,19 @@ const getVendorStandByID = async (req: Request) => {
 const createVendorStand = async (
   req: Request,
 ): Promise<VendorStand & { owner: User }> => {
-  const file = req.file as IFile;
+  let logo = undefined;
 
+  const file = req.file as IFile;
   if (file) {
     const uploadToCloudinary = await fileUploader.uploadToCloudinary(file);
-    req.body.logo = uploadToCloudinary?.secure_url;
+    logo = uploadToCloudinary?.secure_url;
   }
 
-  const { name, description, logo, ownerId } = req.body;
+  const { name, description, ownerId } = req.body;
+
+  if (!name || !description || !ownerId) {
+    throw new Error('Name, description, and ownerId are required fields.');
+  }
 
   const result = await prisma.vendorStand.create({
     data: {

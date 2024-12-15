@@ -40,12 +40,19 @@ const verifyRequest = catchAsync(async (req: Request, res: Response) => {
 const verifyUser = catchAsync(async (req: Request, res: Response) => {
   const result = await authServices.verifyUser(req.body);
 
+  const { refreshToken } = result;
+
+  res.cookie('refreshToken', refreshToken, {
+    secure: false,
+    httpOnly: true,
+  });
+
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
     message: 'User verified successfully!',
     data: {
-      accessToken: result,
+      accessToken: result.accessToken,
     },
   });
 });
@@ -66,6 +73,7 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
     message: 'Logged in successfully!',
     data: {
       accessToken: result.accessToken,
+      user: result.foundUser,
     },
   });
 });
@@ -113,8 +121,8 @@ const forgotPassword = catchAsync(
 
 const resetPassword = catchAsync(
   async (req: Request & { user?: any }, res: Response) => {
-    const token = req.headers.authorization || '';
-
+    // const token = req.headers.authorization || '';
+    const { token } = req.params || '';
     await authServices.resetPassword(token, req.body);
 
     sendResponse(res, {

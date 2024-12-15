@@ -1,4 +1,6 @@
 import jwt, { JwtPayload, Secret } from 'jsonwebtoken';
+import ApiError from '../app/errors/ApiError';
+import { StatusCodes } from 'http-status-codes';
 
 const generateToken = (payload: any, secret: Secret, expiresIn: string) => {
   const token = jwt.sign(payload, secret, {
@@ -14,8 +16,13 @@ const verifyToken = (token: string, secret: Secret) => {
     return jwt.verify(token, secret) as JwtPayload;
   } catch (err: any) {
     if (err) {
-      console.error('JWT verification error:', err.message);
-      return;
+      // console.log(err);
+      // console.error('JWT verification error:', err.message);
+      // return;
+      if (err.name === 'TokenExpiredError') {
+        throw new ApiError(StatusCodes.FORBIDDEN, 'Token has expired.');
+      }
+      throw new ApiError(StatusCodes.FORBIDDEN, 'Invalid token.');
     }
   }
 };

@@ -73,7 +73,7 @@ router.patch(
 router.patch(
   '/:id/soft-delete',
   auth(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.VENDOR),
-  validateRequest(vendorStandValidation.softDeleteVendorStandSchema),
+  // validateRequest(vendorStandValidation.softDeleteVendorStandSchema),
   vendorStandController.softDelete,
 );
 

@@ -8,10 +8,25 @@ import validateRequest from '../../middlewares/validateRequest';
 
 const router = express.Router();
 
+// router.get(
+//   '/me',
+//   auth(UserRole.ADMIN, UserRole.CUSTOMER, UserRole.VENDOR, UserRole.SUPER_ADMIN),
+//   userController.getMyProfile,
+// );
+
+router.get('/test', () => {
+  console.log('Test');
+});
+
 router.get(
-  '/me',
-  auth(UserRole.ADMIN, UserRole.CUSTOMER, UserRole.VENDOR, UserRole.SUPER_ADMIN),
-  userController.getMyProfile,
+  '/:id',
+  // auth(
+  //   UserRole.ADMIN,
+  //   UserRole.CUSTOMER,
+  //   UserRole.VENDOR,
+  //   UserRole.SUPER_ADMIN,
+  // ),
+  userController.getUserProfile,
 );
 
 router.get(
@@ -40,13 +55,17 @@ router.patch(
 router.patch(
   '/:id/become-vendor',
   auth(UserRole.CUSTOMER, UserRole.VENDOR),
-  validateRequest(userValidation.becomeVendor),
   userController.becomeVendor,
 );
 
 router.patch(
   '/:id/update-my-profile',
-  auth(UserRole.ADMIN, UserRole.CUSTOMER, UserRole.VENDOR, UserRole.SUPER_ADMIN),
+  auth(
+    UserRole.ADMIN,
+    UserRole.CUSTOMER,
+    UserRole.VENDOR,
+    UserRole.SUPER_ADMIN,
+  ),
   fileUploader.upload.single('file'),
   (req: Request, res: Response, next: NextFunction) => {
     req.body = JSON.parse(req.body.data);

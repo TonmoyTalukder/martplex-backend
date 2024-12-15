@@ -8,6 +8,9 @@ import { IPaginationOptions } from '../../interfaces/pagination';
 import { paginationHelper } from '../../../helpers/paginationHelper';
 import { userSearchableFields } from './user.constant';
 import { IAuthUser } from '../../interfaces/common';
+import { jwtHelpers } from '../../../helpers/jwtHelpers';
+import { Secret } from 'jsonwebtoken';
+import config from '../../config';
 
 const createAdmin = async (req: Request): Promise<User> => {
   const { email, name, phoneNumber, password } = req.body;
@@ -135,22 +138,36 @@ const changeProfileStatus = async (id: string, status: UserStatus) => {
   return updateUserStatus;
 };
 
-const becomeVendor = async (id: string, role: UserRole) => {
-  await prisma.user.findUniqueOrThrow({
+const becomeVendor = async (id: string) => {
+  const user = await prisma.user.findUniqueOrThrow({
     where: {
       id,
       isDeleted: false,
     },
   });
 
-  const updateUserRole = await prisma.user.update({
+  const updatedUser = await prisma.user.update({
     where: {
-      id,
+      id, // The user ID
     },
-    data: role,
+    data: {
+      role:
+        user.role === UserRole.CUSTOMER ? UserRole.VENDOR : UserRole.CUSTOMER,
+    },
   });
 
-  return updateUserRole;
+  const accessToken = jwtHelpers.generateToken(
+    updatedUser,
+    config.jwt.jwt_secret as Secret,
+    config.jwt.expires_in as string,
+  );
+
+  return {
+    result: {
+      updatedUser,
+      accessToken,
+    },
+  };
 };
 
 const getMyProfile = async (user: IAuthUser) => {
@@ -165,11 +182,27 @@ const getMyProfile = async (user: IAuthUser) => {
   return { userInfo };
 };
 
+const getUserProfile = async (id: string) => {
+  const userInfo = await prisma.user.findUniqueOrThrow({
+    where: {
+      id,
+      status: UserStatus.ACTIVE,
+      isDeleted: false,
+    },
+  });
+
+  const { password, ...userData } = userInfo;
+
+  return { userData };
+};
+
 const updateMyProfile = async (user: IAuthUser, req: Request) => {
   const userInfo = await prisma.user.findUniqueOrThrow({
     where: {
       email: user?.email,
-      status: UserStatus.ACTIVE,
+      status: {
+        in: [UserStatus.ACTIVE, UserStatus.PENDING_VERIFICATION],
+      },
     },
   });
 
@@ -199,7 +232,6 @@ const blockUser = async (id: string, block: boolean) => {
       isDeleted: false,
     },
   });
-
 
   const blockedUser = await prisma.user.update({
     where: {
@@ -240,6 +272,7 @@ export const userService = {
   changeProfileStatus,
   becomeVendor,
   getMyProfile,
+  getUserProfile,
   updateMyProfile,
   blockUser,
   softDelete,
