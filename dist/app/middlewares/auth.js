@@ -19,7 +19,7 @@ const http_status_codes_1 = require("http-status-codes");
 const auth = (...roles) => {
     return (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            console.log(req.headers);
+            // console.log(req.headers);
             let token = req.headers.authorization;
             if (!token) {
                 token = req.cookies.accessToken;
@@ -29,7 +29,7 @@ const auth = (...roles) => {
             }
             else {
                 token = token.replace('Bearer ', '');
-                console.log('Token: ', token);
+                // console.log('Token: ', token);
                 const verifiedUser = jwtHelpers_1.jwtHelpers.verifyToken(token, config_1.default.jwt.jwt_secret);
                 req.user = verifiedUser;
                 if (!roles.length && !roles.includes(verifiedUser.role)) {

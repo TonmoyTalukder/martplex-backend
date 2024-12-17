@@ -19,7 +19,7 @@ router.get('/', productController.getAllProducts);
 router.post(
   '/create-product',
   auth(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.VENDOR),
-  fileUploader.upload.array('files', 10), // Allow multiple files (up to 10)
+  fileUploader.upload.array('files', 10),
   (req: Request, res: Response, next: NextFunction) => {
     req.body = productValidation.createProductSchema.parse(
       JSON.parse(req.body.data),
@@ -30,8 +30,8 @@ router.post(
 
 router.patch(
   '/:id/update-product',
-  auth(UserRole.ADMIN, UserRole.VENDOR, UserRole.SUPER_ADMIN),
-  fileUploader.upload.array('files', 10), // Allow multiple files (up to 10)
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.VENDOR),
+  fileUploader.upload.array('files', 10),
   (req: Request, res: Response, next: NextFunction) => {
     req.body = productValidation.updateProductSchema.parse(
       JSON.parse(req.body.data),
@@ -43,7 +43,7 @@ router.patch(
 router.patch(
   '/:id/soft-delete',
   auth(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.VENDOR),
-  validateRequest(productValidation.softDeleteProductSchema),
+  // validateRequest(productValidation.softDeleteProductSchema),
   productController.softDelete,
 );
 

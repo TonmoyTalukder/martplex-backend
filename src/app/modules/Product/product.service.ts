@@ -21,12 +21,8 @@ const getAllProducts = async (params: any, options: IPaginationOptions) => {
   const andCondition: Prisma.ProductWhereInput[] = [
     {
       isDeleted: false,
-      categories: {
-        some: {
-          category: {
-            isDeleted: false,
-          },
-        },
+      category: {
+        isDeleted: false,
       },
     },
   ];
@@ -69,7 +65,7 @@ const getAllProducts = async (params: any, options: IPaginationOptions) => {
           },
     include: {
       vendorStand: true,
-      categories: true,
+      category: true,
       orderItems: true,
       reviews: true,
       reportProduct: true,
@@ -103,12 +99,8 @@ const getProductByID = async (req: Request) => {
           isDeleted: false,
         },
       },
-      categories: {
-        some: {
-          category: {
-            isDeleted: false,
-          },
-        },
+      category: {
+        isDeleted: false,
       },
     },
     include: {
@@ -127,6 +119,8 @@ const createProduct = async (
   req: Request,
 ): Promise<Product & { vendorStand: VendorStand }> => {
   const files = req.files as IFile[];
+
+  console.log(req.files);
 
   const imageUrls: string[] = [];
   if (files && files.length > 0) {
@@ -186,17 +180,14 @@ const createProduct = async (
   return result;
 };
 
-const updateProduct = async (req: Request) => {
-  await prisma.product.findUniqueOrThrow({
+const updateProduct = async (id: string, req: Request) => {
+  const product = await prisma.product.findUniqueOrThrow({
     where: {
-      id: req.body.id,
+      id,
       isDeleted: false,
-      categories: {
-        some: {
-          category: {
-            isDeleted: false,
-          },
-        },
+
+      category: {
+        isDeleted: false,
       },
     },
   });
@@ -218,7 +209,7 @@ const updateProduct = async (req: Request) => {
 
   const productInfo = await prisma.product.update({
     where: {
-      id: payload.id,
+      id,
     },
     data: payload,
   });
@@ -235,12 +226,8 @@ const softDelete = async (id: string) => {
         isDeleted: false,
         status: VendorStandStatus.ACTIVE,
       },
-      categories: {
-        some: {
-          category: {
-            isDeleted: false,
-          },
-        },
+      category: {
+        isDeleted: false,
       },
     },
   });

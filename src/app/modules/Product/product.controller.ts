@@ -45,7 +45,8 @@ const createProduct = catchAsync(async (req, res, next) => {
 });
 
 const updateProduct = catchAsync(async (req, res, next) => {
-  const result = await productService.updateProduct(req);
+  const { id } = req.params;
+  const result = await productService.updateProduct(id, req);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
@@ -61,7 +62,7 @@ const softDelete = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
-    message: 'Vendor Stand deleted successfully!',
+    message: 'Product deleted successfully!',
     data: result,
   });
 });

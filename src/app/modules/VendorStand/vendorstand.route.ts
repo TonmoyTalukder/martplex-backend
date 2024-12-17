@@ -9,33 +9,30 @@ import { vendorStandValidation } from './vendorstand.validation';
 const router = express.Router();
 
 router.get(
-    '/follow-vendor-stand',
-    validateRequest(vendorStandValidation.followVendorStandSchema),
-    vendorStandController.followVendorStand,
-  );
+  '/follow-vendor-stand',
+  validateRequest(vendorStandValidation.followVendorStandSchema),
+  vendorStandController.followVendorStand,
+);
 
 router.get(
-    '/vendor-stand/followers',
-    validateRequest(vendorStandValidation.getVendorStandFollowersSchema),
-    vendorStandController.getVendorStandFollowers,
-  );
+  '/vendor-stand/followers',
+  validateRequest(vendorStandValidation.getVendorStandFollowersSchema),
+  vendorStandController.getVendorStandFollowers,
+);
 
 router.get(
-    '/vendor-stand/followed',
-    validateRequest(vendorStandValidation.getFollowedVendorStandsSchema),
-    vendorStandController.getFollowedVendorStands,
-  );
+  '/vendor-stand/followed',
+  validateRequest(vendorStandValidation.getFollowedVendorStandsSchema),
+  vendorStandController.getFollowedVendorStands,
+);
 
 router.get(
-    '/:id',
-    validateRequest(vendorStandValidation.getVendorStandByIDSchema),
-    vendorStandController.getVendorStandByID,
-  );
-  
-  router.get(
-    '/',
-    vendorStandController.getAllVendorStands,
-  );
+  '/:id',
+  validateRequest(vendorStandValidation.getVendorStandByIDSchema),
+  vendorStandController.getVendorStandByID,
+);
+
+router.get('/', vendorStandController.getAllVendorStands);
 
 router.post(
   '/create-vendor-stand',
@@ -51,11 +48,7 @@ router.post(
 
 router.patch(
   '/:id/update-vendor-stand',
-  auth(
-    UserRole.ADMIN,
-    UserRole.VENDOR,
-    UserRole.SUPER_ADMIN,
-  ),
+  auth(UserRole.ADMIN, UserRole.VENDOR, UserRole.SUPER_ADMIN),
   fileUploader.upload.single('file'),
   (req: Request, res: Response, next: NextFunction) => {
     req.body = JSON.parse(req.body.data);

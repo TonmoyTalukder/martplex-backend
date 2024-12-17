@@ -17,20 +17,20 @@ export const getVendorStandByIDSchema = z.object({
   id: z.string().uuid('Vendor Stand ID must be a valid UUID').optional(),
 });
 
-export const updateVendorStandSchema = z.object({
-  id: z.string().uuid('Vendor Stand ID must be a valid UUID'),
-  name: z
-    .string()
-    .min(3, 'Name must have at least 3 characters')
-    .max(100, 'Name cannot exceed 100 characters')
-    .optional(),
-  description: z
-    .string()
-    .max(500, 'Description cannot exceed 500 characters')
-    .optional(),
-  logo: z.string().url('Logo must be a valid URL').optional(),
-  status: z.enum(['ACTIVE', 'INACTIVE', 'BLACKLISTED', 'PENDING']).optional(),
-});
+// export const updateVendorStandSchema = z.object({
+//   // id: z.string().uuid('Vendor Stand ID must be a valid UUID'),
+//   name: z
+//     .string()
+//     .min(3, 'Name must have at least 3 characters')
+//     .max(100, 'Name cannot exceed 100 characters')
+//     .optional(),
+//   description: z
+//     .string()
+//     .max(500, 'Description cannot exceed 500 characters')
+//     .optional(),
+//   logo: z.string().url('Logo must be a valid URL').optional(),
+//   status: z.enum(['ACTIVE', 'INACTIVE', 'BLACKLISTED', 'PENDING']).optional(),
+// });
 
 export const blacklistVendorStandSchema = z.object({
   id: z.string().uuid('Vendor Stand ID must be a valid UUID'),
@@ -59,7 +59,7 @@ export const getFollowedVendorStandsSchema = z.object({
 export const vendorStandValidation = {
   createVendorStandSchema,
   getVendorStandByIDSchema,
-  updateVendorStandSchema,
+  // updateVendorStandSchema,
   blacklistVendorStandSchema,
   // softDeleteVendorStandSchema,
   followVendorStandSchema,

@@ -21,16 +21,15 @@ export const createProductSchema = z.object({
   categoryId: z.string().uuid('Invalid category ID'),
   images: z
     .array(z.string().url('Each image must be a valid URL'))
-    .nonempty('At least one image is required'),
+    .nonempty('At least one image is required')
+    .optional(),
 });
 
 export const getProductByIDSchema = z.object({
-    id: z.string().uuid('Vendor Stand ID must be a valid UUID'),
-  });
-  
+  id: z.string().uuid('Vendor Stand ID must be a valid UUID'),
+});
 
 const updateProductSchema = z.object({
-  id: z.string().uuid('Invalid product ID').nonempty('Product ID is required'),
   name: z
     .string()
     .min(3, 'Name must have at least 3 characters')
@@ -42,8 +41,6 @@ const updateProductSchema = z.object({
     .optional(),
   price: z
     .number()
-    .min(0.01, 'Price must be greater than 0')
-    .max(1000000, 'Price cannot exceed 1,000,000')
     .optional(),
   stock: z
     .number()
@@ -55,13 +52,13 @@ const updateProductSchema = z.object({
   images: z.array(z.string().url('Each image must be a valid URL')).optional(),
 });
 
-export const softDeleteProductSchema = z.object({
-  id: z.string().uuid('Product ID must be a valid UUID'),
-});
+// export const softDeleteProductSchema = z.object({
+//   id: z.string().uuid('Product ID must be a valid UUID'),
+// });
 
 export const productValidation = {
   createProductSchema,
   getProductByIDSchema,
   updateProductSchema,
-  softDeleteProductSchema,
+  // softDeleteProductSchema,
 };

@@ -68,6 +68,15 @@ const getAllVendorStands = (params, options) => __awaiter(void 0, void 0, void 0
             : {
                 createdAt: 'desc',
             },
+        include: {
+            owner: true,
+        },
+    });
+    const sanitizedResult = result.map((vendorStand) => {
+        if (vendorStand.owner) {
+            delete vendorStand.owner.password;
+        }
+        return vendorStand;
     });
     const total = yield prisma_1.default.vendorStand.count({
         where: whereConditions,
@@ -78,13 +87,14 @@ const getAllVendorStands = (params, options) => __awaiter(void 0, void 0, void 0
             limit,
             total,
         },
-        data: result,
+        data: sanitizedResult,
     };
 });
-const getVendorStandByID = (req) => __awaiter(void 0, void 0, void 0, function* () {
+const getVendorStandByID = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('Vendor Stand ID: ', id);
     const vendorStandInfo = yield prisma_1.default.vendorStand.findUniqueOrThrow({
         where: {
-            id: req.body.id,
+            id,
             status: client_1.VendorStandStatus.ACTIVE,
             isDeleted: false,
             owner: {
@@ -92,16 +102,26 @@ const getVendorStandByID = (req) => __awaiter(void 0, void 0, void 0, function* 
                 isDeleted: false,
             },
         },
+        include: {
+            owner: true,
+        },
     });
+    if (vendorStandInfo.owner) {
+        delete vendorStandInfo.owner.password;
+    }
     return { vendorStandInfo };
 });
 const createVendorStand = (req) => __awaiter(void 0, void 0, void 0, function* () {
+    let logo = undefined;
     const file = req.file;
     if (file) {
         const uploadToCloudinary = yield fileUploader_1.fileUploader.uploadToCloudinary(file);
-        req.body.logo = uploadToCloudinary === null || uploadToCloudinary === void 0 ? void 0 : uploadToCloudinary.secure_url;
+        logo = uploadToCloudinary === null || uploadToCloudinary === void 0 ? void 0 : uploadToCloudinary.secure_url;
     }
-    const { name, description, logo, ownerId } = req.body;
+    const { name, description, ownerId } = req.body;
+    if (!name || !description || !ownerId) {
+        throw new Error('Name, description, and ownerId are required fields.');
+    }
     const result = yield prisma_1.default.vendorStand.create({
         data: {
             name,
@@ -125,12 +145,12 @@ const updateVendorStand = (req) => __awaiter(void 0, void 0, void 0, function* (
     const file = req.file;
     if (file) {
         const uploadToCloudinary = yield fileUploader_1.fileUploader.uploadToCloudinary(file);
-        req.body.logo = uploadToCloudinary === null || uploadToCloudinary === void 0 ? void 0 : uploadToCloudinary.secure_url;
+        req.body.data.logo = uploadToCloudinary === null || uploadToCloudinary === void 0 ? void 0 : uploadToCloudinary.secure_url;
     }
-    const payload = req.body;
+    const payload = req.body.data;
     const vendorStandInfo = yield prisma_1.default.vendorStand.update({
         where: {
-            id: payload.id,
+            id: req.body.id,
         },
         data: payload,
     });

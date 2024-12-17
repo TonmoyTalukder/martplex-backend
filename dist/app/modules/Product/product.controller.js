@@ -50,7 +50,8 @@ const createProduct = (0, catchAsync_1.default)((req, res, next) => __awaiter(vo
     });
 }));
 const updateProduct = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield product_service_1.productService.updateProduct(req);
+    const { id } = req.params;
+    const result = yield product_service_1.productService.updateProduct(id, req);
     (0, responseHelper_1.sendResponse)(res, {
         statusCode: http_status_codes_1.StatusCodes.OK,
         success: true,
@@ -64,7 +65,7 @@ const softDelete = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, voi
     (0, responseHelper_1.sendResponse)(res, {
         statusCode: http_status_codes_1.StatusCodes.OK,
         success: true,
-        message: 'Vendor Stand deleted successfully!',
+        message: 'Product deleted successfully!',
         data: result,
     });
 }));

@@ -1,13 +1,27 @@
-import {
-  Category,
-  Prisma,
-  ProductCategory,
-} from '@prisma/client';
+import { Category, Prisma, ProductCategory } from '@prisma/client';
 import prisma from '../../../shared/prisma';
 import { Request } from 'express';
 import { IPaginationOptions } from '../../interfaces/pagination';
 import { paginationHelper } from '../../../helpers/paginationHelper';
 import { categorySearchableFields } from './category.constant';
+
+const getCategoryByID = async (req: Request) => {
+  const categoryInfo = await prisma.category.findUniqueOrThrow({
+    where: {
+      id: req.body.id,
+      isDeleted: false,
+      products: {
+        some: {
+          product: {
+            isDeleted: false,
+          },
+        },
+      },
+    },
+  });
+
+  return { categoryInfo };
+};
 
 const getAllCategories = async (params: any, options: IPaginationOptions) => {
   const { limit, page, skip, sortBy, sortOrder } =
@@ -69,24 +83,6 @@ const getAllCategories = async (params: any, options: IPaginationOptions) => {
     },
     data: result,
   };
-};
-
-const getCategoryByID = async (req: Request) => {
-  const categoryInfo = await prisma.category.findUniqueOrThrow({
-    where: {
-      id: req.body.id,
-      isDeleted: false,
-      products: {
-        some: {
-          product: {
-            isDeleted: false,
-          },
-        },
-      },
-    },
-  });
-
-  return { categoryInfo };
 };
 
 const createCategory = async (

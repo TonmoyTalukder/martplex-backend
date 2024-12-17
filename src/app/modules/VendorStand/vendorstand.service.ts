@@ -154,14 +154,14 @@ const updateVendorStand = async (req: Request) => {
 
   if (file) {
     const uploadToCloudinary = await fileUploader.uploadToCloudinary(file);
-    req.body.logo = uploadToCloudinary?.secure_url;
+    req.body.data.logo = uploadToCloudinary?.secure_url;
   }
 
-  const payload = req.body;
+  const payload = req.body.data;
 
   const vendorStandInfo = await prisma.vendorStand.update({
     where: {
-      id: payload.id,
+      id: req.body.id,
     },
     data: payload,
   });

@@ -51,7 +51,7 @@ const updateVendorStand = catchAsync(async (req, res, next) => {
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
-    message: 'Vendor Stand created successfully.',
+    message: 'Vendor Stand updated successfully.',
     data: result,
   });
 });

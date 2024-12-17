@@ -9,6 +9,17 @@ import {
 } from './category.constant';
 import { categoryService } from './category.service';
 
+const getCategoryByID = catchAsync(async (req, res, next) => {
+  const result = await categoryService.getCategoryByID(req);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'Category by ID data fetched!',
+    data: result,
+  });
+});
+
 const getAllCategories = catchAsync(async (req, res, next) => {
   const filters = pick(req.query, categoryFilterableFields);
   const options = pick(req.query, categoryFilterableOptions);
@@ -20,17 +31,6 @@ const getAllCategories = catchAsync(async (req, res, next) => {
     message: 'Category data fetched!',
     meta: result.meta,
     data: result.data,
-  });
-});
-
-const getCategoryByID = catchAsync(async (req, res, next) => {
-  const result = await categoryService.getCategoryByID(req);
-
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: 'Category by ID data fetched!',
-    data: result,
   });
 });
 

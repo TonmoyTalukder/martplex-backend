@@ -12,7 +12,7 @@ const auth = (...roles: string[]) => {
     next: NextFunction,
   ) => {
     try {
-      console.log(req.headers);
+      // console.log(req.headers);
       let token = req.headers.authorization;
 
       if (!token) {
@@ -23,7 +23,7 @@ const auth = (...roles: string[]) => {
         throw new ApiError(StatusCodes.UNAUTHORIZED, 'You are not authorized!');
       } else {
         token = token.replace('Bearer ', '');
-        console.log('Token: ', token);
+        // console.log('Token: ', token);
 
         const verifiedUser = jwtHelpers.verifyToken(
           token,

@@ -27,6 +27,22 @@ exports.categoryService = void 0;
 const prisma_1 = __importDefault(require("../../../shared/prisma"));
 const paginationHelper_1 = require("../../../helpers/paginationHelper");
 const category_constant_1 = require("./category.constant");
+const getCategoryByID = (req) => __awaiter(void 0, void 0, void 0, function* () {
+    const categoryInfo = yield prisma_1.default.category.findUniqueOrThrow({
+        where: {
+            id: req.body.id,
+            isDeleted: false,
+            products: {
+                some: {
+                    product: {
+                        isDeleted: false,
+                    },
+                },
+            },
+        },
+    });
+    return { categoryInfo };
+});
 const getAllCategories = (params, options) => __awaiter(void 0, void 0, void 0, function* () {
     const { limit, page, skip, sortBy, sortOrder } = paginationHelper_1.paginationHelper.calculatePagination(options);
     const { searchTerm } = params, filterData = __rest(params, ["searchTerm"]);
@@ -78,22 +94,6 @@ const getAllCategories = (params, options) => __awaiter(void 0, void 0, void 0, 
         },
         data: result,
     };
-});
-const getCategoryByID = (req) => __awaiter(void 0, void 0, void 0, function* () {
-    const categoryInfo = yield prisma_1.default.category.findUniqueOrThrow({
-        where: {
-            id: req.body.id,
-            isDeleted: false,
-            products: {
-                some: {
-                    product: {
-                        isDeleted: false,
-                    },
-                },
-            },
-        },
-    });
-    return { categoryInfo };
 });
 const createCategory = (req) => __awaiter(void 0, void 0, void 0, function* () {
     const { name, description } = req.body;

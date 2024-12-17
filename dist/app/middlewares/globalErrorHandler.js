@@ -50,5 +50,6 @@ const globalErrorHandler = (err, req, res, next) => {
             break;
     }
     res.status(errorResponse.status).json(errorResponse);
+    console.log(errorResponse);
 };
 exports.globalErrorHandler = globalErrorHandler;

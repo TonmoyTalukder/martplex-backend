@@ -35,12 +35,8 @@ const getAllProducts = (params, options) => __awaiter(void 0, void 0, void 0, fu
     const andCondition = [
         {
             isDeleted: false,
-            categories: {
-                some: {
-                    category: {
-                        isDeleted: false,
-                    },
-                },
+            category: {
+                isDeleted: false,
             },
         },
     ];
@@ -77,7 +73,7 @@ const getAllProducts = (params, options) => __awaiter(void 0, void 0, void 0, fu
             },
         include: {
             vendorStand: true,
-            categories: true,
+            category: true,
             orderItems: true,
             reviews: true,
             reportProduct: true,
@@ -108,12 +104,8 @@ const getProductByID = (req) => __awaiter(void 0, void 0, void 0, function* () {
                     isDeleted: false,
                 },
             },
-            categories: {
-                some: {
-                    category: {
-                        isDeleted: false,
-                    },
-                },
+            category: {
+                isDeleted: false,
             },
         },
         include: {
@@ -128,6 +120,7 @@ const getProductByID = (req) => __awaiter(void 0, void 0, void 0, function* () {
 });
 const createProduct = (req) => __awaiter(void 0, void 0, void 0, function* () {
     const files = req.files;
+    console.log(req.files);
     const imageUrls = [];
     if (files && files.length > 0) {
         for (const file of files) {
@@ -177,17 +170,13 @@ const createProduct = (req) => __awaiter(void 0, void 0, void 0, function* () {
     }));
     return result;
 });
-const updateProduct = (req) => __awaiter(void 0, void 0, void 0, function* () {
-    yield prisma_1.default.product.findUniqueOrThrow({
+const updateProduct = (id, req) => __awaiter(void 0, void 0, void 0, function* () {
+    const product = yield prisma_1.default.product.findUniqueOrThrow({
         where: {
-            id: req.body.id,
+            id,
             isDeleted: false,
-            categories: {
-                some: {
-                    category: {
-                        isDeleted: false,
-                    },
-                },
+            category: {
+                isDeleted: false,
             },
         },
     });
@@ -205,7 +194,7 @@ const updateProduct = (req) => __awaiter(void 0, void 0, void 0, function* () {
     const payload = req.body;
     const productInfo = yield prisma_1.default.product.update({
         where: {
-            id: payload.id,
+            id,
         },
         data: payload,
     });
@@ -220,12 +209,8 @@ const softDelete = (id) => __awaiter(void 0, void 0, void 0, function* () {
                 isDeleted: false,
                 status: client_1.VendorStandStatus.ACTIVE,
             },
-            categories: {
-                some: {
-                    category: {
-                        isDeleted: false,
-                    },
-                },
+            category: {
+                isDeleted: false,
             },
         },
     });

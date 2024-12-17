@@ -58,7 +58,7 @@ model VendorStand {
   name           String
   description    String?
   logo           String?
-  ownerId        String  
+  ownerId        String
   owner          User    @relation(fields: [ownerId], references: [id])
   vendorSale     Boolean @default(false)
   flashSale      Boolean @default(false)
@@ -113,9 +113,10 @@ model Product {
   onSale        Boolean  @default(false)
   discount      Int      @default(0)
   isDeleted     Boolean  @default(false)
-  vendorStandId String   @unique
+  vendorStandId String
   categoryId    String
 
+  category       Category          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   vendorStand    VendorStand       @relation(fields: [vendorStandId], references: [id], onDelete: Cascade)
   categories     ProductCategory[]
   orderItems     OrderItem[]
@@ -133,8 +134,8 @@ model Product {
 }
 
 model ProductCategory {
-  productId  String   @unique
-  categoryId String   @unique
+  productId  String
+  categoryId String
   product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
@@ -149,8 +150,9 @@ model Category {
   isDeleted   Boolean           @default(false)
   products    ProductCategory[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  allProduct Product[]
 
   @@index([name])
   @@map("categories")
@@ -289,14 +291,14 @@ model ReportVendorStand {
 }
 
 model Payment {
-  id            String @id @unique @default(uuid())
+  id            String  @id @unique @default(uuid())
   transactionId String? @unique
-  orderId       String @unique
-  vendorStandId String @unique
+  orderId       String  @unique
+  vendorStandId String  @unique
   amount        Float
 
-  order         Order         @relation(fields: [orderId], references: [id])
-  vendorStand   VendorStand   @relation(fields: [vendorStandId], references: [id])
+  order         Order          @relation(fields: [orderId], references: [id])
+  vendorStand   VendorStand    @relation(fields: [vendorStandId], references: [id])
   paymentMethod PaymentMethod?
   status        PaymentStatus
 

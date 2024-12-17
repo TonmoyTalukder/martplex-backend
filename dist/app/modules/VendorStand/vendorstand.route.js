@@ -26,5 +26,7 @@ router.patch('/:id/update-vendor-stand', (0, auth_1.default)(client_1.UserRole.A
     return vendorstand_controller_1.vendorStandController.updateVendorStand(req, res, next);
 });
 router.patch('/:id/blacklist', (0, auth_1.default)(client_1.UserRole.ADMIN, client_1.UserRole.SUPER_ADMIN), (0, validateRequest_1.default)(vendorstand_validation_1.vendorStandValidation.blacklistVendorStandSchema), vendorstand_controller_1.vendorStandController.blacklistVendorStand);
-router.patch('/:id/soft-delete', (0, auth_1.default)(client_1.UserRole.ADMIN, client_1.UserRole.SUPER_ADMIN, client_1.UserRole.VENDOR), (0, validateRequest_1.default)(vendorstand_validation_1.vendorStandValidation.softDeleteVendorStandSchema), vendorstand_controller_1.vendorStandController.softDelete);
+router.patch('/:id/soft-delete', (0, auth_1.default)(client_1.UserRole.ADMIN, client_1.UserRole.SUPER_ADMIN, client_1.UserRole.VENDOR), 
+// validateRequest(vendorStandValidation.softDeleteVendorStandSchema),
+vendorstand_controller_1.vendorStandController.softDelete);
 exports.vendorStandRoutes = router;

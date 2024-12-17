@@ -19,6 +19,15 @@ const http_status_codes_1 = require("http-status-codes");
 const pick_1 = __importDefault(require("../../../shared/pick"));
 const category_constant_1 = require("./category.constant");
 const category_service_1 = require("./category.service");
+const getCategoryByID = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield category_service_1.categoryService.getCategoryByID(req);
+    (0, responseHelper_1.sendResponse)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: 'Category by ID data fetched!',
+        data: result,
+    });
+}));
 const getAllCategories = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const filters = (0, pick_1.default)(req.query, category_constant_1.categoryFilterableFields);
     const options = (0, pick_1.default)(req.query, category_constant_1.categoryFilterableOptions);
@@ -29,15 +38,6 @@ const getAllCategories = (0, catchAsync_1.default)((req, res, next) => __awaiter
         message: 'Category data fetched!',
         meta: result.meta,
         data: result.data,
-    });
-}));
-const getCategoryByID = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield category_service_1.categoryService.getCategoryByID(req);
-    (0, responseHelper_1.sendResponse)(res, {
-        statusCode: http_status_codes_1.StatusCodes.OK,
-        success: true,
-        message: 'Category by ID data fetched!',
-        data: result,
     });
 }));
 const createCategory = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {

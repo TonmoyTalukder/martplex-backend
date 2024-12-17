@@ -32,7 +32,8 @@ const getAllVendorStands = (0, catchAsync_1.default)((req, res, next) => __await
     });
 }));
 const getVendorStandByID = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield vendorstand_service_1.vendorStandService.getVendorStandByID(req);
+    const id = req.params.id;
+    const result = yield vendorstand_service_1.vendorStandService.getVendorStandByID(id);
     (0, responseHelper_1.sendResponse)(res, {
         statusCode: http_status_codes_1.StatusCodes.OK,
         success: true,
@@ -54,7 +55,7 @@ const updateVendorStand = (0, catchAsync_1.default)((req, res, next) => __awaite
     (0, responseHelper_1.sendResponse)(res, {
         statusCode: http_status_codes_1.StatusCodes.OK,
         success: true,
-        message: 'Vendor Stand created successfully.',
+        message: 'Vendor Stand updated successfully.',
         data: result,
     });
 }));
