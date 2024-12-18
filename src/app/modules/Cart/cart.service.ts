@@ -9,10 +9,10 @@ import {
 import prisma from '../../../shared/prisma';
 import { Request } from 'express';
 
-const getCartByID = async (req: Request) => {
+const getCartByID = async (id: string, req: Request) => {
   const cartInfo = await prisma.cart.findUniqueOrThrow({
     where: {
-      id: req.body.id,
+      userId: id,
     },
     include: {
       user: true,
@@ -33,27 +33,98 @@ const createCart = async (
     throw new Error('Items array is required and cannot be empty.');
   }
 
-  const result = await prisma.$transaction(async (prisma) => {
-    const cart = await prisma.cart.create({
-      data: {
-        userId,
-        vendorId: vendorStandId,
-      },
-    });
+  const existingCart = await prisma.cart.findFirst({
+    where: {
+      userId,
+      vendorId: vendorStandId,
+    },
+    include: {
+      items: true,
+    },
+  });
 
-    // Create CartItems individually and collect their results
-    const cartItems = await Promise.all(
-      items.map(
-        (item: { productId: string; quantity: number; cartId: string }) =>
-          prisma.cartItem.create({
-            data: {
-              cartId: cart.id,
-              productId: item.productId,
-              quantity: item.quantity,
-            },
+  const result = await prisma.$transaction(async (prisma) => {
+    let cart: any;
+    let cartItems;
+    ``;
+    if (existingCart) {
+      // Update existing cart by adding new items
+      const currentItemIds = existingCart.items.map((item) => item.productId);
+
+      const newItems = items.filter(
+        (item: { productId: string }) =>
+          !currentItemIds.includes(item.productId),
+      );
+
+      // Create new CartItems for the existing cart
+      await prisma.cartItem.createMany({
+        data: newItems.map(
+          (item: {
+            productId: string;
+            name: string;
+            quantity: number;
+            price: number;
+          }) => ({
+            cartId: existingCart.id,
+            productId: item.productId,
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price,
           }),
-      ),
-    );
+        ),
+      });
+
+      // Update quantities for existing items
+      await Promise.all(
+        items
+          .filter((item: { productId: string }) =>
+            currentItemIds.includes(item.productId),
+          )
+          .map((item: { productId: string; quantity: number }) =>
+            prisma.cartItem.updateMany({
+              where: {
+                cartId: existingCart.id,
+                productId: item.productId,
+              },
+              data: { quantity: { increment: item.quantity } },
+            }),
+          ),
+      );
+
+      cart = existingCart;
+      cartItems = await prisma.cartItem.findMany({
+        where: { cartId: existingCart.id },
+      });
+    } else {
+      // Create a new cart if none exists
+      cart = await prisma.cart.create({
+        data: {
+          userId,
+          vendorId: vendorStandId,
+        },
+      });
+
+      // Add items to the new cart
+      cartItems = await Promise.all(
+        items.map(
+          (item: {
+            productId: string;
+            name: string;
+            quantity: number;
+            price: number;
+          }) =>
+            prisma.cartItem.create({
+              data: {
+                cartId: cart.id,
+                productId: item.productId,
+                name: item.name,
+                quantity: item.quantity,
+                price: item.price,
+              },
+            }),
+        ),
+      );
+    }
 
     return { ...cart, items: cartItems };
   });
@@ -141,10 +212,14 @@ const updateCartItem = async (req: Request): Promise<{ message: string }> => {
     throw new Error('Quantity must be a positive integer or 0.');
   }
 
+  console.log(cartItemId);
+
   // Fetch the existing CartItem
   const existingCartItem = await prisma.cartItem.findUniqueOrThrow({
     where: { id: cartItemId },
   });
+
+  console.log(existingCartItem);
 
   if (quantity === 0) {
     // Delete the CartItem if quantity is 0

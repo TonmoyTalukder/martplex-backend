@@ -171,15 +171,22 @@ const createProduct = (req) => __awaiter(void 0, void 0, void 0, function* () {
     return result;
 });
 const updateProduct = (id, req) => __awaiter(void 0, void 0, void 0, function* () {
-    const product = yield prisma_1.default.product.findUniqueOrThrow({
+    const _a = req.body, { categoryId } = _a, restPayload = __rest(_a, ["categoryId"]);
+    // Validate category ID
+    const categoryExists = yield prisma_1.default.category.findFirst({
         where: {
-            id,
+            id: categoryId,
             isDeleted: false,
-            category: {
-                isDeleted: false,
-            },
         },
     });
+    if (!categoryExists) {
+        return {
+            success: false,
+            status: 400,
+            message: 'Invalid category ID or category is deleted.',
+        };
+    }
+    // Process uploaded files
     const files = req.files;
     const imageUrls = [];
     if (files && files.length > 0) {
@@ -189,15 +196,15 @@ const updateProduct = (id, req) => __awaiter(void 0, void 0, void 0, function* (
                 imageUrls.push(uploadToCloudinary.secure_url);
             }
         }
-        req.body.images = imageUrls;
     }
-    const payload = req.body;
+    // Include images in payload
+    const payload = Object.assign(Object.assign({}, restPayload), { images: imageUrls.length > 0 ? imageUrls : undefined });
+    // Update product
     const productInfo = yield prisma_1.default.product.update({
-        where: {
-            id,
-        },
+        where: { id },
         data: payload,
     });
+    console.log(payload);
     return { productInfo };
 });
 const softDelete = (id) => __awaiter(void 0, void 0, void 0, function* () {

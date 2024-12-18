@@ -5,8 +5,8 @@ import { StatusCodes } from 'http-status-codes';
 import { cartService } from './cart.service';
 
 const getCartByID = catchAsync(async (req, res, next) => {
-  const result = await cartService.getCartByID(req);
-
+  const { id } = req.params;
+  const result = await cartService.getCartByID(id, req);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
@@ -59,7 +59,6 @@ const deleteCart = catchAsync(async (req: Request, res: Response) => {
 
 const deleteCartItem = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-
   const result = await cartService.deleteCartItem(id);
   sendResponse(res, {
     statusCode: StatusCodes.OK,

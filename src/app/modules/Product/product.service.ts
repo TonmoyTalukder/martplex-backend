@@ -181,17 +181,25 @@ const createProduct = async (
 };
 
 const updateProduct = async (id: string, req: Request) => {
-  const product = await prisma.product.findUniqueOrThrow({
-    where: {
-      id,
-      isDeleted: false,
+  const { categoryId, ...restPayload } = req.body;
 
-      category: {
-        isDeleted: false,
-      },
+  // Validate category ID
+  const categoryExists = await prisma.category.findFirst({
+    where: {
+      id: categoryId,
+      isDeleted: false,
     },
   });
 
+  if (!categoryExists) {
+    return {
+      success: false,
+      status: 400,
+      message: 'Invalid category ID or category is deleted.',
+    };
+  }
+
+  // Process uploaded files
   const files = req.files as IFile[];
   const imageUrls: string[] = [];
 
@@ -202,17 +210,21 @@ const updateProduct = async (id: string, req: Request) => {
         imageUrls.push(uploadToCloudinary.secure_url);
       }
     }
-    req.body.images = imageUrls;
   }
 
-  const payload = req.body;
+  // Include images in payload
+  const payload = {
+    ...restPayload,
+    images: imageUrls.length > 0 ? imageUrls : undefined,
+  };
 
+  // Update product
   const productInfo = await prisma.product.update({
-    where: {
-      id,
-    },
+    where: { id },
     data: payload,
   });
+
+  console.log(payload);
 
   return { productInfo };
 };

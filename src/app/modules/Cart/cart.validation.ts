@@ -11,6 +11,8 @@ const createCartSchema = z.object({
     .array(
       z.object({
         productId: z.string().uuid('Invalid product ID format.'),
+        name: z.string(),
+        price: z.number().int().min(1, 'Price must be at least 1'),
         quantity: z.number().int().min(1, 'Quantity must be at least 1.'),
       }),
     )
@@ -25,6 +27,7 @@ const updateCartSchema = z.object({
       z.object({
         id: z.string().optional(), // For existing items
         productId: z.string().uuid('Invalid product ID format.'),
+        price: z.number().int().min(1, 'Price must be at least 1'),
         quantity: z.number().int().min(1, 'Quantity must be at least 1.'),
       }),
     )

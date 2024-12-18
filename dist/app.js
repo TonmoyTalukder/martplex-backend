@@ -12,10 +12,23 @@ const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const app = (0, express_1.default)();
 // cors
 // app.use(cors());
-app.use((0, cors_1.default)({
-    origin: 'http://localhost:3000',
-    credentials: true, // Allow credentials
-}));
+// app.use(
+//   cors({
+//     origin: 'http://localhost:3000',
+//     credentials: true, // Allow credentials
+//   }),
+// );
+// Configure CORS options
+const corsOptions = {
+    origin: ['https://martplex.vercel.app/'], // List allowed origins https://martplex.vercel.app/ http://localhost:3000
+    credentials: true, // Allow credentials (cookies, authorization headers, etc.)
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+};
+// Apply CORS with options
+app.use((0, cors_1.default)(corsOptions));
+// Handle preflight (OPTIONS) requests
+app.options('*', (0, cors_1.default)());
 // parser
 app.use((0, cookie_parser_1.default)());
 app.use(express_1.default.json());

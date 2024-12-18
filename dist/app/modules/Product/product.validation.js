@@ -39,9 +39,7 @@ const updateProductSchema = zod_1.z.object({
         .string()
         .max(500, 'Description cannot exceed 500 characters')
         .optional(),
-    price: zod_1.z
-        .number()
-        .optional(),
+    price: zod_1.z.number().optional(),
     stock: zod_1.z
         .number()
         .int('Stock must be an integer')
@@ -49,6 +47,8 @@ const updateProductSchema = zod_1.z.object({
         .optional(),
     vendorStandId: zod_1.z.string().uuid('Invalid vendor stand ID').optional(),
     categoryId: zod_1.z.string().uuid('Invalid category ID').optional(),
+    onSale: zod_1.z.boolean().optional(),
+    discount: zod_1.z.number().optional(),
     images: zod_1.z.array(zod_1.z.string().url('Each image must be a valid URL')).optional(),
 });
 // export const softDeleteProductSchema = z.object({

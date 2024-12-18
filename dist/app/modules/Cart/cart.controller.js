@@ -18,7 +18,8 @@ const catchAsync_1 = __importDefault(require("../../../shared/catchAsync"));
 const http_status_codes_1 = require("http-status-codes");
 const cart_service_1 = require("./cart.service");
 const getCartByID = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield cart_service_1.cartService.getCartByID(req);
+    const { id } = req.params;
+    const result = yield cart_service_1.cartService.getCartByID(id, req);
     (0, responseHelper_1.sendResponse)(res, {
         statusCode: http_status_codes_1.StatusCodes.OK,
         success: true,

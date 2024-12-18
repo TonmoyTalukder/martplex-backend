@@ -10,14 +10,12 @@ const router = express.Router();
 router.get(
   '/:id',
   auth(UserRole.VENDOR, UserRole.CUSTOMER),
-  validateRequest(cartValidation.getCartByIDSchema),
   cartController.getCartByID,
 );
 
 router.post(
   '/create-cart',
   auth(UserRole.VENDOR, UserRole.CUSTOMER),
-  validateRequest(cartValidation.createCartSchema),
   cartController.createCart,
 );
 
@@ -29,9 +27,9 @@ router.post(
 );
 
 router.put(
-  'cart-item/:id/update',
+  '/cart-item/:id/update',
   auth(UserRole.VENDOR, UserRole.CUSTOMER),
-  validateRequest(cartValidation.updateCartItemSchema),
+  // validateRequest(cartValidation.updateCartItemSchema),
   cartController.updateCartItem,
 );
 
@@ -43,9 +41,9 @@ router.patch(
 );
 
 router.patch(
-  'cart-item/:id/delete',
+  '/cart-item/:id/delete',
   auth(UserRole.VENDOR, UserRole.CUSTOMER),
-  validateRequest(cartValidation.deleteCartItemSchema),
+  // validateRequest(cartValidation.deleteCartItemSchema),
   cartController.deleteCartItem,
 );
 

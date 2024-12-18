@@ -14,10 +14,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.cartService = void 0;
 const prisma_1 = __importDefault(require("../../../shared/prisma"));
-const getCartByID = (req) => __awaiter(void 0, void 0, void 0, function* () {
+const getCartByID = (id, req) => __awaiter(void 0, void 0, void 0, function* () {
     const cartInfo = yield prisma_1.default.cart.findUniqueOrThrow({
         where: {
-            id: req.body.id,
+            userId: id,
         },
         include: {
             user: true,
@@ -32,21 +32,67 @@ const createCart = (req) => __awaiter(void 0, void 0, void 0, function* () {
     if (!Array.isArray(items) || items.length === 0) {
         throw new Error('Items array is required and cannot be empty.');
     }
+    const existingCart = yield prisma_1.default.cart.findFirst({
+        where: {
+            userId,
+            vendorId: vendorStandId,
+        },
+        include: {
+            items: true,
+        },
+    });
     const result = yield prisma_1.default.$transaction((prisma) => __awaiter(void 0, void 0, void 0, function* () {
-        const cart = yield prisma.cart.create({
-            data: {
-                userId,
-                vendorId: vendorStandId,
-            },
-        });
-        // Create CartItems individually and collect their results
-        const cartItems = yield Promise.all(items.map((item) => prisma.cartItem.create({
-            data: {
-                cartId: cart.id,
-                productId: item.productId,
-                quantity: item.quantity,
-            },
-        })));
+        let cart;
+        let cartItems;
+        ``;
+        if (existingCart) {
+            // Update existing cart by adding new items
+            const currentItemIds = existingCart.items.map((item) => item.productId);
+            const newItems = items.filter((item) => !currentItemIds.includes(item.productId));
+            // Create new CartItems for the existing cart
+            yield prisma.cartItem.createMany({
+                data: newItems.map((item) => ({
+                    cartId: existingCart.id,
+                    productId: item.productId,
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price,
+                })),
+            });
+            // Update quantities for existing items
+            yield Promise.all(items
+                .filter((item) => currentItemIds.includes(item.productId))
+                .map((item) => prisma.cartItem.updateMany({
+                where: {
+                    cartId: existingCart.id,
+                    productId: item.productId,
+                },
+                data: { quantity: { increment: item.quantity } },
+            })));
+            cart = existingCart;
+            cartItems = yield prisma.cartItem.findMany({
+                where: { cartId: existingCart.id },
+            });
+        }
+        else {
+            // Create a new cart if none exists
+            cart = yield prisma.cart.create({
+                data: {
+                    userId,
+                    vendorId: vendorStandId,
+                },
+            });
+            // Add items to the new cart
+            cartItems = yield Promise.all(items.map((item) => prisma.cartItem.create({
+                data: {
+                    cartId: cart.id,
+                    productId: item.productId,
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price,
+                },
+            })));
+        }
         return Object.assign(Object.assign({}, cart), { items: cartItems });
     }));
     return result;
@@ -105,10 +151,12 @@ const updateCartItem = (req) => __awaiter(void 0, void 0, void 0, function* () {
     if (quantity === undefined || quantity < 0) {
         throw new Error('Quantity must be a positive integer or 0.');
     }
+    console.log(cartItemId);
     // Fetch the existing CartItem
     const existingCartItem = yield prisma_1.default.cartItem.findUniqueOrThrow({
         where: { id: cartItemId },
     });
+    console.log(existingCartItem);
     if (quantity === 0) {
         // Delete the CartItem if quantity is 0
         yield prisma_1.default.cartItem.delete({

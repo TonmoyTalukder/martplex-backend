@@ -39,9 +39,7 @@ const updateProductSchema = z.object({
     .string()
     .max(500, 'Description cannot exceed 500 characters')
     .optional(),
-  price: z
-    .number()
-    .optional(),
+  price: z.number().optional(),
   stock: z
     .number()
     .int('Stock must be an integer')
@@ -49,6 +47,8 @@ const updateProductSchema = z.object({
     .optional(),
   vendorStandId: z.string().uuid('Invalid vendor stand ID').optional(),
   categoryId: z.string().uuid('Invalid category ID').optional(),
+  onSale: z.boolean().optional(),
+  discount: z.number().optional(),
   images: z.array(z.string().url('Each image must be a valid URL')).optional(),
 });
 
