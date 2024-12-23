@@ -33,7 +33,7 @@ router.get(
 router.post(
   '/create-order',
   auth(UserRole.VENDOR, UserRole.CUSTOMER),
-  validateRequest(orderValidation.createOrderSchema),
+  // validateRequest(orderValidation.createOrderSchema),
   orderController.createOrder,
 );
 

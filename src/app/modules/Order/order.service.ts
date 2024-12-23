@@ -88,16 +88,19 @@ const createOrder = async (
   }
 
   const result = await prisma.$transaction(async (prisma) => {
+    console.log('Creating order...');
     const order = await prisma.order.create({
       data: {
         userId,
         vendorStandId,
         totalAmount,
-        status: OrderStatus.PENDING,
+        status: 'PENDING',
       },
     });
 
-    // Create OrderItems individually and collect their results
+    console.log('Order created:', order);
+
+    console.log('Creating order items...');
     const orderItems = await Promise.all(
       items.map(
         (item: { productId: string; quantity: number; price: number }) =>
@@ -112,18 +115,19 @@ const createOrder = async (
       ),
     );
 
-    await paymentService.createPayment(
-      order.id,
-      vendorStandId,
-      totalAmount,
-      // paymentMethod,
-    );
+    console.log('Order items created:', orderItems);
 
-    await prisma.cart.delete({
-      where: {
-        id: cartId,
-      },
+    // // Payment service
+    // console.log('Initiating payment...');
+    // await paymentService.createPayment(order.id, vendorStandId, totalAmount);
+
+    // Delete the cart
+    console.log('Deleting cart items...');
+    await prisma.cartItem.deleteMany({
+      where: { cartId },
     });
+
+    console.log('Cart items deleted for cartId:', cartId);
 
     return { ...order, items: orderItems };
   });
