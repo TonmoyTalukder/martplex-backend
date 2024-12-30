@@ -1,4 +1,10 @@
-import { Order, OrderItem, OrderStatus, Prisma } from '@prisma/client';
+import {
+  Order,
+  OrderItem,
+  OrderStatus,
+  PaymentStatus,
+  Prisma,
+} from '@prisma/client';
 import prisma from '../../../shared/prisma';
 import { Request } from 'express';
 import { IPaginationOptions } from '../../interfaces/pagination';
@@ -117,9 +123,18 @@ const createOrder = async (
 
     console.log('Order items created:', orderItems);
 
-    // // Payment service
-    // console.log('Initiating payment...');
+    // Payment service
+    console.log('Initiating payment...');
     // await paymentService.createPayment(order.id, vendorStandId, totalAmount);
+
+    await prisma.payment.create({
+      data: {
+        orderId: order.id,
+        vendorStandId,
+        amount: totalAmount,
+        status: PaymentStatus.PENDING,
+      },
+    });
 
     // Delete the cart
     console.log('Deleting cart items...');

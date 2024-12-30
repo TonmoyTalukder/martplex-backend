@@ -7,6 +7,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model DayCount {
+  id  String @id @unique @default(uuid())
+  day Int
+
+  @@map("daycount")
+}
+
 model User {
   id                        String     @id @unique @default(uuid())
   name                      String
@@ -355,7 +362,7 @@ model FlashSale {
 model Cart {
   id       String @id @unique @default(uuid())
   userId   String @unique
-  vendorId String @unique // Restrict to single vendor
+  vendorId String
 
   user   User        @relation(fields: [userId], references: [id])
   vendor VendorStand @relation(fields: [vendorId], references: [id])

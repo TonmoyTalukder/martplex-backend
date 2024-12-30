@@ -1,6 +1,25 @@
 import cron from 'node-cron';
 import prisma from './prisma';
 
+const incrementDay = async () => {
+  const dayCount = await prisma.dayCount.findFirst();
+
+  if (!dayCount) {
+    // If no record exists, create the initial record
+    await prisma.dayCount.create({
+      data: { day: 1 },
+    });
+    console.log('DayCount initialized with day = 1.');
+  } else {
+    // Increment the day field by 1
+    await prisma.dayCount.update({
+      where: { id: dayCount.id },
+      data: { day: dayCount.day + 1 },
+    });
+    console.log(`DayCount updated to day = ${dayCount.day + 1}.`);
+  }
+};
+
 const deleteOldCarts = async () => {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -66,6 +85,12 @@ cron.schedule('0 0 * * *', async () => {
   console.log(`[${now}] Starting scheduled cleanup task...`);
 
   try {
+    // Increment the day count
+    await withRetries(async () => {
+      await incrementDay();
+      console.log('DayCount incremented successfully.');
+    });
+
     // Delete old carts
     await withRetries(async () => {
       const result = await deleteOldCarts();

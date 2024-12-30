@@ -10,6 +10,7 @@ import prisma from '../../../shared/prisma';
 import { Request } from 'express';
 
 const getCartByID = async (id: string, req: Request) => {
+  // return { message: 'Cart is empty' };
   const cartInfo = await prisma.cart.findUniqueOrThrow({
     where: {
       userId: id,
@@ -36,7 +37,6 @@ const createCart = async (
   const existingCart = await prisma.cart.findFirst({
     where: {
       userId,
-      vendorId: vendorStandId,
     },
     include: {
       items: true,
@@ -48,6 +48,15 @@ const createCart = async (
     let cartItems;
     ``;
     if (existingCart) {
+      await prisma.cart.update({
+        where: {
+          userId,
+        },
+        data: {
+          vendorId: vendorStandId,
+        },
+      });
+
       // Update existing cart by adding new items
       const currentItemIds = existingCart.items.map((item) => item.productId);
 
@@ -280,16 +289,19 @@ const deleteCartItem = async (
     },
   });
 
-  await prisma.cartItem.delete({
-    where: { id: cartItemId },
-  });
-
-  if (existingCart.items.length === 0) {
-    // Delete the Cart
-    await prisma.cart.delete({
-      where: { id: existingCart.id },
+  await prisma.$transaction(async (prisma) => {
+    await prisma.cartItem.delete({
+      where: { id: cartItemId },
     });
-  }
+
+    // if (existingCart.items.length === 1) {
+    //   // Delete the Cart
+    //   await prisma.cart.update({
+    //     where: { id: existingCart.id },
+    //     data: { vendorId: '' },
+    //   });
+    // }
+  });
 
   return { message: 'Cart Items deleted successfully.' };
 };

@@ -83,39 +83,6 @@ const createPayment = async (
   // const { orderId, vendorStandId, amount, paymentMethod } = req.body;
 
   return await prisma.$transaction(async (prisma) => {
-    // Fetch and validate the order
-    const order = await prisma.order.findUniqueOrThrow({
-      where: { id: orderId },
-      include: {
-        items: {
-          include: {
-            product: true,
-          },
-        },
-      },
-    });
-
-    // Validate that all items have sufficient stock
-    const areQuantitiesValid = order.items.every((item) => {
-      return item.quantity <= item.product.stock;
-    });
-
-    if (!areQuantitiesValid) {
-      throw new Error('One or more items exceed available stock.');
-    }
-
-    // Deduct the stock for each product
-    for (const item of order.items) {
-      await prisma.product.update({
-        where: { id: item.productId },
-        data: {
-          stock: {
-            decrement: item.quantity, // Reduce stock by the order item quantity
-          },
-        },
-      });
-    }
-
     // Validate the vendor stand
     await prisma.vendorStand.findUniqueOrThrow({
       where: {
@@ -285,26 +252,63 @@ const initiatePayment = async (
     },
   });
 
-  const transactionId = `TRX_MARTPLEX_${randomUUID()}_${Date.now()}_${Math.floor(
-    Math.random() * 1e6,
-  )}`;
+  const result = await prisma.$transaction(async (prisma) => {
+    // Fetch and validate the order
+    const order = await prisma.order.findUniqueOrThrow({
+      where: { id: payment.orderId },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
 
-  // Create payment data
-  const paymentData = {
-    transactionId,
-    amount: payment.amount,
-    customerName: user.name,
-    customerEmail: user.email,
-    customerPhone: user.phoneNumber,
-    customerAddress: deliveryAddress,
-  };
+    // Validate that all items have sufficient stock
+    const areQuantitiesValid = order.items.every((item) => {
+      return item.quantity <= item.product.stock;
+    });
 
-  console.log(paymentData);
+    if (!areQuantitiesValid) {
+      throw new Error('One or more items exceed available stock.');
+    }
 
-  // Initiate the payment
-  const paymentSession = await initiateAamarPayment(paymentData);
+    // Deduct the stock for each product
+    for (const item of order.items) {
+      await prisma.product.update({
+        where: { id: item.productId },
+        data: {
+          stock: {
+            decrement: item.quantity, // Reduce stock by the order item quantity
+          },
+        },
+      });
+    }
 
-  return paymentSession;
+    const transactionId = `TRX_MARTPLEX_${randomUUID()}_${Date.now()}_${Math.floor(
+      Math.random() * 1e6,
+    )}`;
+
+    // Create payment data
+    const paymentData = {
+      transactionId,
+      amount: payment.amount,
+      customerName: user.name,
+      customerEmail: user.email,
+      customerPhone: user.phoneNumber,
+      customerAddress: deliveryAddress,
+    };
+
+    console.log(paymentData);
+
+    // Initiate the payment
+    const paymentSession = await initiateAamarPayment(paymentData);
+
+    return paymentSession;
+  });
+
+  return result;
 };
 
 export const paymentService = {
