@@ -10,7 +10,6 @@ import { Request } from 'express';
 import { IPaginationOptions } from '../../interfaces/pagination';
 import { paginationHelper } from '../../../helpers/paginationHelper';
 import { orderSearchableFields } from './order.constant';
-import { paymentService } from '../Payment/payment.service';
 
 const getAllOrders = async (params: any, options: IPaginationOptions) => {
   const { limit, page, skip, sortBy, sortOrder } =
@@ -54,6 +53,10 @@ const getAllOrders = async (params: any, options: IPaginationOptions) => {
         : {
             createdAt: 'desc',
           },
+    include: {
+      // vendorStand: true,
+      payment: true,
+    },
   });
 
   const total = await prisma.order.count({
@@ -78,6 +81,7 @@ const getOrderByID = async (req: Request) => {
     include: {
       user: true,
       vendorStand: true,
+      payment: true,
     },
   });
 
@@ -127,7 +131,7 @@ const createOrder = async (
     console.log('Initiating payment...');
     // await paymentService.createPayment(order.id, vendorStandId, totalAmount);
 
-    await prisma.payment.create({
+    const payment = await prisma.payment.create({
       data: {
         orderId: order.id,
         vendorStandId,
@@ -142,9 +146,16 @@ const createOrder = async (
       where: { cartId },
     });
 
+    // await prisma.order.update({
+    //   where: { id: order.id },
+    //   data: {
+    //     paymentId: payment.id,
+    //   },
+    // });
+
     console.log('Cart items deleted for cartId:', cartId);
 
-    return { ...order, items: orderItems };
+    return { ...order, items: orderItems, payment };
   });
 
   return result;
@@ -209,6 +220,7 @@ const deleteOrder = async (orderId: string): Promise<{ message: string }> => {
     throw new Error('Order ID is required.');
   }
 
+  // Ensure the order exists
   await prisma.order.findUniqueOrThrow({
     where: { id: orderId },
     include: {
@@ -217,10 +229,16 @@ const deleteOrder = async (orderId: string): Promise<{ message: string }> => {
           product: true,
         },
       },
+      payment: true, // Include payment information if needed
     },
   });
 
   await prisma.$transaction(async (prisma) => {
+    // Delete related Payment records
+    await prisma.payment.deleteMany({
+      where: { orderId },
+    });
+
     // Delete all related OrderItems
     await prisma.orderItem.deleteMany({
       where: { orderId },

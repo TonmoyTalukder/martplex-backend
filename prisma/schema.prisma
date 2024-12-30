@@ -78,7 +78,7 @@ model VendorStand {
   followers         Follow[]            @relation("VendorFollows")
   orders            Order[]             @relation("VendorOrders")
   Coupon            Coupon[]            @relation("VendorCoupons")
-  payment           Payment?
+  payment           Payment[]
   Cart              Cart[]
   reportVendorStand ReportVendorStand[]
 
@@ -180,10 +180,12 @@ model RecentProduct {
 }
 
 model Order {
-  id            String @id @unique @default(uuid())
-  userId        String
-  vendorStandId String
-  totalAmount   Float
+  id              String  @id @unique @default(uuid())
+  userId          String
+  vendorStandId   String
+  totalAmount     Float
+  deliveryAddress String?
+  deliveryPhone   String?
 
   user        User        @relation("UserOrders", fields: [userId], references: [id], onDelete: Cascade)
   vendorStand VendorStand @relation("VendorOrders", fields: [vendorStandId], references: [id], onDelete: Cascade)
@@ -301,13 +303,13 @@ model Payment {
   id            String  @id @unique @default(uuid())
   transactionId String? @unique
   orderId       String  @unique
-  vendorStandId String  @unique
+  vendorStandId String
   amount        Float
+  paymentMethod String?
 
-  order         Order          @relation(fields: [orderId], references: [id])
-  vendorStand   VendorStand    @relation(fields: [vendorStandId], references: [id])
-  paymentMethod PaymentMethod?
-  status        PaymentStatus
+  order       Order         @relation(fields: [orderId], references: [id])
+  vendorStand VendorStand   @relation(fields: [vendorStandId], references: [id])
+  status      PaymentStatus
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -316,10 +318,10 @@ model Payment {
   @@map("payments")
 }
 
-enum PaymentMethod {
-  Online
-  COD
-}
+// enum PaymentMethod {
+//   Online
+//   COD
+// }
 
 enum PaymentStatus {
   PENDING

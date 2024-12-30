@@ -35,10 +35,14 @@ const getPaymentByID = catchAsync(async (req, res, next) => {
 });
 
 const updatePaymentMethod = catchAsync(async (req, res, next) => {
-  const { paymentId, paymentMethod } = req.body;
+  const { paymentId, paymentMethod, userId, deliveryAddress, deliveryPhone } =
+    req.body;
   const result = await paymentService.updatePaymentMethod(
     paymentId,
     paymentMethod,
+    userId,
+    deliveryAddress,
+    deliveryPhone,
   );
   sendResponse(res, {
     statusCode: StatusCodes.OK,
@@ -83,7 +87,11 @@ const initiatePayment = async (
     const { paymentId } = req.params;
     const { userId, deliveryAddress } = req.body;
 
-    const result = await paymentService.initiatePayment(paymentId, userId, deliveryAddress);
+    const result = await paymentService.initiatePayment(
+      paymentId,
+      userId,
+      deliveryAddress,
+    );
     sendResponse(res, {
       statusCode: StatusCodes.OK,
       success: true,

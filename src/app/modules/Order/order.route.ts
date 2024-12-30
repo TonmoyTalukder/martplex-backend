@@ -69,7 +69,7 @@ router.patch(
     UserRole.VENDOR,
     UserRole.CUSTOMER,
   ),
-  validateRequest(orderValidation.deleteOrderSchema),
+  // validateRequest(orderValidation.deleteOrderSchema),
   orderController.deleteOrder,
 );
 
@@ -81,7 +81,7 @@ router.patch(
     UserRole.VENDOR,
     UserRole.CUSTOMER,
   ),
-  validateRequest(orderValidation.deleteOrderItemSchema),
+  // validateRequest(orderValidation.deleteOrderItemSchema),
   orderController.deleteOrderItem,
 );
 

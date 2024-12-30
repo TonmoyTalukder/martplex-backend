@@ -1,4 +1,3 @@
-import { PaymentMethod } from '@prisma/client';
 import { z } from 'zod';
 
 // Schema for getting payment by ID
@@ -11,7 +10,10 @@ const getPaymentByIDSchema = z.object({
 // Schema for updating payment method
 const updatePaymentMethodSchema = z.object({
   paymentId: z.string().uuid(),
-  paymentMethod: z.nativeEnum(PaymentMethod),
+  paymentMethod: z.string(),
+  userId: z.string(),
+  deliveryAddress: z.string(),
+  deliveryPhone: z.string(),
 });
 
 // Schema for deleting an unsuccessful payment
@@ -32,9 +34,9 @@ const initiatePaymentSchema = z.object({
 });
 
 export const paymentValidation = {
-  getPaymentByIDSchema, 
-  updatePaymentMethodSchema, 
-  deleteUnsuccessfulPaymentSchema, 
-  deletePaymentSchema, 
+  getPaymentByIDSchema,
+  updatePaymentMethodSchema,
+  deleteUnsuccessfulPaymentSchema,
+  deletePaymentSchema,
   initiatePaymentSchema,
 };

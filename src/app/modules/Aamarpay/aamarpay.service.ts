@@ -11,7 +11,7 @@ const confirmationService = async (
 ) => {
   const verifyResponse = await verifyAamarPayment(transactionId);
 
-  let message = '';
+  let message = ''; 
 
   if (verifyResponse && verifyResponse.pay_status === 'Successful') {
     await paymentService.updatePaymentStatus(
@@ -26,8 +26,7 @@ const confirmationService = async (
     message = 'Payment Failed!';
   }
 
-  const filePath = join(__dirname, '../../../views/confirmation.html');
-
+  const filePath = join(__dirname, '../../../../views/confirmation.html');
   let template = readFileSync(filePath, 'utf-8');
 
   template = template.replace('{{message}}', message);

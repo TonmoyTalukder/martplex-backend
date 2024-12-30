@@ -30,12 +30,12 @@ router.get(
     UserRole.CUSTOMER,
   ),
   paymentController.getAllPayments,
-);
+); 
 
 router.patch(
-  '/:id/update/payment-method',
+  '/update/payment-method',
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.CUSTOMER),
-  validateRequest(paymentValidation.updatePaymentMethodSchema),
+  // validateRequest(paymentValidation.updatePaymentMethodSchema),
   paymentController.updatePaymentMethod,
 );
 

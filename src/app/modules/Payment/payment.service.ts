@@ -1,10 +1,8 @@
 import {
   Prisma,
   Payment,
-  UserStatus,
   VendorStandStatus,
   PaymentStatus,
-  PaymentMethod,
 } from '@prisma/client';
 import prisma from '../../../shared/prisma';
 import { Request } from 'express';
@@ -109,14 +107,78 @@ const createPayment = async (
 
 const updatePaymentMethod = async (
   paymentId: string,
-  paymentMethod: PaymentMethod,
-): Promise<Payment> => {
-  const updatedPayment = await prisma.payment.update({
-    where: { id: paymentId },
-    data: { paymentMethod: paymentMethod },
-  });
+  paymentMethod: string,
+  userId: string,
+  deliveryAddress: string,
+  deliveryPhone: string,
+): Promise<Payment | any> => {
+  if (paymentMethod === 'COD') {
+    // COD payment flow
+    const result = await prisma.$transaction(async (prisma) => {
+      const updatedPayment = await prisma.payment.update({
+        where: { id: paymentId },
+        data: { paymentMethod: 'COD' },
+      });
 
-  return updatedPayment;
+      const existingPayment = await prisma.payment.findUniqueOrThrow({
+        where: { id: paymentId },
+      });
+
+      await prisma.order.update({
+        where: { id: existingPayment.orderId },
+        data: {
+          deliveryAddress,
+          deliveryPhone,
+        },
+      });
+
+      return updatedPayment;
+    });
+
+    // Generate transaction ID for COD and update payment status
+    const transactionId = `TRX_MARTPLEX_${randomUUID()}_${Date.now()}_${Math.floor(
+      Math.random() * 1e6,
+    )}`;
+
+    await paymentService.updatePaymentStatus(
+      paymentId,
+      PaymentStatus.SUCCESS,
+      transactionId,
+    );
+
+    return result;
+  } else {
+    // Online payment flow
+    await prisma.$transaction(async (prisma) => {
+      const updatedPayment = await prisma.payment.update({
+        where: { id: paymentId },
+        data: { paymentMethod: 'Online' },
+      });
+
+      const existingPayment = await prisma.payment.findUniqueOrThrow({
+        where: { id: paymentId },
+      });
+
+      await prisma.order.update({
+        where: { id: existingPayment.orderId },
+        data: {
+          deliveryAddress,
+          deliveryPhone,
+        },
+      });
+
+      return updatedPayment;
+    });
+
+    // Initiate online payment
+    const result = await paymentService.initiatePayment(
+      paymentId,
+      userId,
+      deliveryAddress,
+    );
+
+    return result; // Return initiatePayment results
+  }
 };
 
 const updatePaymentStatus = async (
@@ -293,6 +355,7 @@ const initiatePayment = async (
     // Create payment data
     const paymentData = {
       transactionId,
+      paymentId,
       amount: payment.amount,
       customerName: user.name,
       customerEmail: user.email,
