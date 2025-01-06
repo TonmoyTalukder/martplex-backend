@@ -26,28 +26,28 @@ router.post(
 router.post(
   '/reply/create',
   auth(UserRole.CUSTOMER, UserRole.VENDOR),
-  validateRequest(reviewReplyValidation.createReplySchema),
+  // validateRequest(reviewReplyValidation.createReplySchema),
   reviewReplyController.createReply,
 );
 
-router.put(
+router.patch(
   '/:id/update',
   auth(UserRole.CUSTOMER),
-  validateRequest(reviewReplyValidation.updateReviewSchema),
+  // validateRequest(reviewReplyValidation.updateReviewSchema),
   reviewReplyController.updateReview,
 );
 
-router.post(
+router.patch(
   '/reply/:id/update',
   auth(UserRole.CUSTOMER, UserRole.VENDOR),
-  validateRequest(reviewReplyValidation.updateReplySchema),
+  // validateRequest(reviewReplyValidation.updateReplySchema),
   reviewReplyController.updateReply,
 );
 
 router.patch(
   '/:id/delete',
   auth(UserRole.ADMIN, UserRole.CUSTOMER, UserRole.SUPER_ADMIN),
-  validateRequest(reviewReplyValidation.deleteReviewSchema),
+  // validateRequest(reviewReplyValidation.deleteReviewSchema),
   reviewReplyController.deleteReview,
 );
 
@@ -59,7 +59,7 @@ router.patch(
     UserRole.VENDOR,
     UserRole.SUPER_ADMIN,
   ),
-  validateRequest(reviewReplyValidation.deleteReplySchema),
+  // validateRequest(reviewReplyValidation.deleteReplySchema),
   reviewReplyController.deleteReply,
 );
 

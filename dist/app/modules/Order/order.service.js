@@ -28,7 +28,6 @@ const client_1 = require("@prisma/client");
 const prisma_1 = __importDefault(require("../../../shared/prisma"));
 const paginationHelper_1 = require("../../../helpers/paginationHelper");
 const order_constant_1 = require("./order.constant");
-const payment_service_1 = require("../Payment/payment.service");
 const getAllOrders = (params, options) => __awaiter(void 0, void 0, void 0, function* () {
     const { limit, page, skip, sortBy, sortOrder } = paginationHelper_1.paginationHelper.calculatePagination(options);
     const { searchTerm } = params, filterData = __rest(params, ["searchTerm"]);
@@ -64,6 +63,16 @@ const getAllOrders = (params, options) => __awaiter(void 0, void 0, void 0, func
             : {
                 createdAt: 'desc',
             },
+        include: {
+            user: true,
+            vendorStand: true,
+            payment: true,
+            items: {
+                include: {
+                    product: true,
+                },
+            },
+        },
     });
     const total = yield prisma_1.default.order.count({
         where: whereConditions,
@@ -85,6 +94,7 @@ const getOrderByID = (req) => __awaiter(void 0, void 0, void 0, function* () {
         include: {
             user: true,
             vendorStand: true,
+            payment: true,
         },
     });
     return { orderInfo };
@@ -95,15 +105,17 @@ const createOrder = (req) => __awaiter(void 0, void 0, void 0, function* () {
         throw new Error('Items array is required and cannot be empty.');
     }
     const result = yield prisma_1.default.$transaction((prisma) => __awaiter(void 0, void 0, void 0, function* () {
+        console.log('Creating order...');
         const order = yield prisma.order.create({
             data: {
                 userId,
                 vendorStandId,
                 totalAmount,
-                status: client_1.OrderStatus.PENDING,
+                status: 'PENDING',
             },
         });
-        // Create OrderItems individually and collect their results
+        console.log('Order created:', order);
+        console.log('Creating order items...');
         const orderItems = yield Promise.all(items.map((item) => prisma.orderItem.create({
             data: {
                 orderId: order.id,
@@ -112,13 +124,31 @@ const createOrder = (req) => __awaiter(void 0, void 0, void 0, function* () {
                 price: item.price,
             },
         })));
-        yield payment_service_1.paymentService.createPayment(order.id, vendorStandId, totalAmount);
-        yield prisma.cart.delete({
-            where: {
-                id: cartId,
+        console.log('Order items created:', orderItems);
+        // Payment service
+        console.log('Initiating payment...');
+        // await paymentService.createPayment(order.id, vendorStandId, totalAmount);
+        const payment = yield prisma.payment.create({
+            data: {
+                orderId: order.id,
+                vendorStandId,
+                amount: totalAmount,
+                status: client_1.PaymentStatus.PENDING,
             },
         });
-        return Object.assign(Object.assign({}, order), { items: orderItems });
+        // Delete the cart
+        console.log('Deleting cart items...');
+        yield prisma.cartItem.deleteMany({
+            where: { cartId },
+        });
+        // await prisma.order.update({
+        //   where: { id: order.id },
+        //   data: {
+        //     paymentId: payment.id,
+        //   },
+        // });
+        console.log('Cart items deleted for cartId:', cartId);
+        return Object.assign(Object.assign({}, order), { items: orderItems, payment });
     }));
     return result;
 });
@@ -163,10 +193,39 @@ const updateOrder = (req) => __awaiter(void 0, void 0, void 0, function* () {
     }));
     return result;
 });
+const updateOrderStatus = (req) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const { orderId, status } = req.body;
+    if (!orderId) {
+        throw new Error('Order ID is required.');
+    }
+    // Map the string status to the corresponding OrderStatus enum value
+    const statusMap = {
+        PENDING: client_1.OrderStatus.PENDING,
+        CONFIRMED: client_1.OrderStatus.CONFIRM,
+        PROCESSING: client_1.OrderStatus.PROCESSING,
+        SHIPPED: client_1.OrderStatus.SHIPPED,
+        DELIVERED: client_1.OrderStatus.DELIVERED,
+        CANCELED: client_1.OrderStatus.CANCELED,
+    };
+    const updateStatus = (_a = statusMap[status.toUpperCase()]) !== null && _a !== void 0 ? _a : client_1.OrderStatus.PENDING;
+    // Update the Order
+    const order = yield prisma_1.default.order.update({
+        where: { id: orderId },
+        data: {
+            status: updateStatus,
+        },
+        include: {
+            items: true,
+        },
+    });
+    return order;
+});
 const deleteOrder = (orderId) => __awaiter(void 0, void 0, void 0, function* () {
     if (!orderId) {
         throw new Error('Order ID is required.');
     }
+    // Ensure the order exists
     yield prisma_1.default.order.findUniqueOrThrow({
         where: { id: orderId },
         include: {
@@ -175,9 +234,14 @@ const deleteOrder = (orderId) => __awaiter(void 0, void 0, void 0, function* () 
                     product: true,
                 },
             },
+            payment: true, // Include payment information if needed
         },
     });
     yield prisma_1.default.$transaction((prisma) => __awaiter(void 0, void 0, void 0, function* () {
+        // Delete related Payment records
+        yield prisma.payment.deleteMany({
+            where: { orderId },
+        });
         // Delete all related OrderItems
         yield prisma.orderItem.deleteMany({
             where: { orderId },
@@ -261,6 +325,7 @@ exports.orderService = {
     getOrderByID,
     createOrder,
     updateOrder,
+    updateOrderStatus,
     updateOrderItem,
     deleteOrder,
     deleteOrderItem,

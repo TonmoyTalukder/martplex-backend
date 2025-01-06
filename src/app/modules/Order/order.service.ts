@@ -54,8 +54,14 @@ const getAllOrders = async (params: any, options: IPaginationOptions) => {
             createdAt: 'desc',
           },
     include: {
-      // vendorStand: true,
+      user: true,
+      vendorStand: true,
       payment: true,
+      items: {
+        include: {
+          product: true,
+        },
+      },
     },
   });
 
@@ -215,6 +221,39 @@ const updateOrder = async (
   return result;
 };
 
+const updateOrderStatus = async (req: Request): Promise<Order> => {
+  const { orderId, status } = req.body;
+
+  if (!orderId) {
+    throw new Error('Order ID is required.');
+  }
+
+  // Map the string status to the corresponding OrderStatus enum value
+  const statusMap: { [key: string]: OrderStatus } = {
+    PENDING: OrderStatus.PENDING,
+    CONFIRMED: OrderStatus.CONFIRM,
+    PROCESSING: OrderStatus.PROCESSING,
+    SHIPPED: OrderStatus.SHIPPED,
+    DELIVERED: OrderStatus.DELIVERED,
+    CANCELED: OrderStatus.CANCELED,
+  };
+
+  const updateStatus = statusMap[status.toUpperCase()] ?? OrderStatus.PENDING;
+
+  // Update the Order
+  const order = await prisma.order.update({
+    where: { id: orderId },
+    data: {
+      status: updateStatus,
+    },
+    include: {
+      items: true,
+    },
+  });
+
+  return order;
+};
+
 const deleteOrder = async (orderId: string): Promise<{ message: string }> => {
   if (!orderId) {
     throw new Error('Order ID is required.');
@@ -341,6 +380,7 @@ export const orderService = {
   getOrderByID,
   createOrder,
   updateOrder,
+  updateOrderStatus,
   updateOrderItem,
   deleteOrder,
   deleteOrderItem,

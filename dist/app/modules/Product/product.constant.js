@@ -10,6 +10,7 @@ exports.productFilterableFields = [
     'name',
     'searchTerm',
     'vendorStandId',
+    'category',
 ];
 exports.productFilterableOptions = [
     'limit',

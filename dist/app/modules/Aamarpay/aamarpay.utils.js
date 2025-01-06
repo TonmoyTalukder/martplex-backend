@@ -22,28 +22,28 @@ const initiateAamarPayment = (paymentData) => __awaiter(void 0, void 0, void 0, 
             store_id: config_1.default.payment.storeID,
             signature_key: config_1.default.payment.signatureKey,
             tran_id: paymentData.transactionId,
-            success_url: `https://martplex-backend.vercel.app/api/payment/confirmation?transactionId=${paymentData.transactionId}&status=success$paymentId=${paymentData.paymentId}`,
+            success_url: `https://martplex-backend.vercel.app/api/payment/confirmation?transactionId=${paymentData.transactionId}&status=success&paymentId=${paymentData.paymentId}`,
             fail_url: `https://martplex-backend.vercel.app/api/payment/confirmation?status=failed`,
-            cancel_url: "https://sportify-now.vercel.app/",
+            cancel_url: 'https://martplex.vercel.app/',
             amount: paymentData.amount,
-            currency: "BDT",
-            desc: "Merchant Registration Payment",
+            currency: 'BDT',
+            desc: 'Merchant Registration Payment',
             cus_name: paymentData.customerName,
             cus_email: paymentData.customerEmail,
             cus_add1: paymentData.customerAddress,
-            cus_add2: "N/A",
-            cus_city: "N/A",
-            cus_state: "N/A",
-            cus_postcode: "N/A",
-            cus_country: "N/A",
+            cus_add2: 'N/A',
+            cus_city: 'N/A',
+            cus_state: 'N/A',
+            cus_postcode: 'N/A',
+            cus_country: 'N/A',
             cus_phone: paymentData.customerPhone,
-            type: "json"
+            type: 'json',
         });
         return response.data;
     }
     catch (err) {
-        console.log("err from paymentUtils: => ", err);
-        throw new Error("Payment initiation failed!");
+        console.log('err from paymentUtils: => ', err);
+        throw new Error('Payment initiation failed!');
     }
 });
 exports.initiateAamarPayment = initiateAamarPayment;
@@ -53,14 +53,14 @@ const verifyAamarPayment = (tnxId) => __awaiter(void 0, void 0, void 0, function
             params: {
                 store_id: config_1.default.payment.storeID,
                 signature_key: config_1.default.payment.signatureKey,
-                type: "json",
+                type: 'json',
                 request_id: tnxId,
-            }
+            },
         });
         return response.data;
     }
     catch (err) {
-        throw new Error("Payment validation failed!");
+        throw new Error('Payment validation failed!');
     }
 });
 exports.verifyAamarPayment = verifyAamarPayment;

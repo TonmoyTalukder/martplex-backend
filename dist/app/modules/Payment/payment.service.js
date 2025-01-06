@@ -82,35 +82,6 @@ const getPaymentByID = (req) => __awaiter(void 0, void 0, void 0, function* () {
 const createPayment = (orderId, vendorStandId, amount) => __awaiter(void 0, void 0, void 0, function* () {
     // const { orderId, vendorStandId, amount, paymentMethod } = req.body;
     return yield prisma_1.default.$transaction((prisma) => __awaiter(void 0, void 0, void 0, function* () {
-        // Fetch and validate the order
-        const order = yield prisma.order.findUniqueOrThrow({
-            where: { id: orderId },
-            include: {
-                items: {
-                    include: {
-                        product: true,
-                    },
-                },
-            },
-        });
-        // Validate that all items have sufficient stock
-        const areQuantitiesValid = order.items.every((item) => {
-            return item.quantity <= item.product.stock;
-        });
-        if (!areQuantitiesValid) {
-            throw new Error('One or more items exceed available stock.');
-        }
-        // Deduct the stock for each product
-        for (const item of order.items) {
-            yield prisma.product.update({
-                where: { id: item.productId },
-                data: {
-                    stock: {
-                        decrement: item.quantity, // Reduce stock by the order item quantity
-                    },
-                },
-            });
-        }
         // Validate the vendor stand
         yield prisma.vendorStand.findUniqueOrThrow({
             where: {
@@ -132,12 +103,54 @@ const createPayment = (orderId, vendorStandId, amount) => __awaiter(void 0, void
         return payment;
     }));
 });
-const updatePaymentMethod = (paymentId, paymentMethod) => __awaiter(void 0, void 0, void 0, function* () {
-    const updatedPayment = yield prisma_1.default.payment.update({
-        where: { id: paymentId },
-        data: { paymentMethod: paymentMethod },
-    });
-    return updatedPayment;
+const updatePaymentMethod = (paymentId, paymentMethod, userId, deliveryAddress, deliveryPhone) => __awaiter(void 0, void 0, void 0, function* () {
+    if (paymentMethod === 'COD') {
+        // COD payment flow
+        const result = yield prisma_1.default.$transaction((prisma) => __awaiter(void 0, void 0, void 0, function* () {
+            const updatedPayment = yield prisma.payment.update({
+                where: { id: paymentId },
+                data: { paymentMethod: 'COD' },
+            });
+            const existingPayment = yield prisma.payment.findUniqueOrThrow({
+                where: { id: paymentId },
+            });
+            yield prisma.order.update({
+                where: { id: existingPayment.orderId },
+                data: {
+                    deliveryAddress,
+                    deliveryPhone,
+                },
+            });
+            return updatedPayment;
+        }));
+        // Generate transaction ID for COD and update payment status
+        const transactionId = `TRX_MARTPLEX_${(0, crypto_1.randomUUID)()}_${Date.now()}_${Math.floor(Math.random() * 1e6)}`;
+        yield exports.paymentService.updatePaymentStatus(paymentId, client_1.PaymentStatus.SUCCESS, transactionId);
+        return result;
+    }
+    else {
+        // Online payment flow
+        yield prisma_1.default.$transaction((prisma) => __awaiter(void 0, void 0, void 0, function* () {
+            const updatedPayment = yield prisma.payment.update({
+                where: { id: paymentId },
+                data: { paymentMethod: 'Online' },
+            });
+            const existingPayment = yield prisma.payment.findUniqueOrThrow({
+                where: { id: paymentId },
+            });
+            yield prisma.order.update({
+                where: { id: existingPayment.orderId },
+                data: {
+                    deliveryAddress,
+                    deliveryPhone,
+                },
+            });
+            return updatedPayment;
+        }));
+        // Initiate online payment
+        const result = yield exports.paymentService.initiatePayment(paymentId, userId, deliveryAddress);
+        return result; // Return initiatePayment results
+    }
 });
 const updatePaymentStatus = (paymentId, newStatus, transactionId) => __awaiter(void 0, void 0, void 0, function* () {
     return yield prisma_1.default.$transaction((prisma) => __awaiter(void 0, void 0, void 0, function* () {
@@ -244,20 +257,53 @@ const initiatePayment = (paymentId, userId, deliveryAddress) => __awaiter(void 0
             id: userId,
         },
     });
-    const transactionId = `TRX_MARTPLEX_${(0, crypto_1.randomUUID)()}_${Date.now()}_${Math.floor(Math.random() * 1e6)}`;
-    // Create payment data
-    const paymentData = {
-        transactionId,
-        amount: payment.amount,
-        customerName: user.name,
-        customerEmail: user.email,
-        customerPhone: user.phoneNumber,
-        customerAddress: deliveryAddress,
-    };
-    console.log(paymentData);
-    // Initiate the payment
-    const paymentSession = yield (0, aamarpay_utils_1.initiateAamarPayment)(paymentData);
-    return paymentSession;
+    const result = yield prisma_1.default.$transaction((prisma) => __awaiter(void 0, void 0, void 0, function* () {
+        // Fetch and validate the order
+        const order = yield prisma.order.findUniqueOrThrow({
+            where: { id: payment.orderId },
+            include: {
+                items: {
+                    include: {
+                        product: true,
+                    },
+                },
+            },
+        });
+        // Validate that all items have sufficient stock
+        const areQuantitiesValid = order.items.every((item) => {
+            return item.quantity <= item.product.stock;
+        });
+        if (!areQuantitiesValid) {
+            throw new Error('One or more items exceed available stock.');
+        }
+        // Deduct the stock for each product
+        for (const item of order.items) {
+            yield prisma.product.update({
+                where: { id: item.productId },
+                data: {
+                    stock: {
+                        decrement: item.quantity, // Reduce stock by the order item quantity
+                    },
+                },
+            });
+        }
+        const transactionId = `TRX_MARTPLEX_${(0, crypto_1.randomUUID)()}_${Date.now()}_${Math.floor(Math.random() * 1e6)}`;
+        // Create payment data
+        const paymentData = {
+            transactionId,
+            paymentId,
+            amount: payment.amount,
+            customerName: user.name,
+            customerEmail: user.email,
+            customerPhone: user.phoneNumber,
+            customerAddress: deliveryAddress,
+        };
+        console.log(paymentData);
+        // Initiate the payment
+        const paymentSession = yield (0, aamarpay_utils_1.initiateAamarPayment)(paymentData);
+        return paymentSession;
+    }));
+    return result;
 });
 exports.paymentService = {
     getAllPayments, //

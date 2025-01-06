@@ -41,8 +41,8 @@ const getPaymentByID = (0, catchAsync_1.default)((req, res, next) => __awaiter(v
     });
 }));
 const updatePaymentMethod = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const { paymentId, paymentMethod } = req.body;
-    const result = yield payment_service_1.paymentService.updatePaymentMethod(paymentId, paymentMethod);
+    const { paymentId, paymentMethod, userId, deliveryAddress, deliveryPhone } = req.body;
+    const result = yield payment_service_1.paymentService.updatePaymentMethod(paymentId, paymentMethod, userId, deliveryAddress, deliveryPhone);
     (0, responseHelper_1.sendResponse)(res, {
         statusCode: http_status_codes_1.StatusCodes.OK,
         success: true,

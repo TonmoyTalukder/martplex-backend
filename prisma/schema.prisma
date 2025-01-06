@@ -167,8 +167,8 @@ model Category {
 
 model RecentProduct {
   id        String   @id @unique @default(uuid())
-  userId    String   @unique
-  productId String   @unique
+  userId    String
+  productId String
   viewedAt  DateTime @default(now())
 
   user    User    @relation(fields: [userId], references: [id])
@@ -254,8 +254,8 @@ model Review {
 model Reply {
   id       String @id @unique @default(uuid())
   content  String
-  userId   String @unique
-  reviewId String @unique
+  userId   String
+  reviewId String
 
   user   User   @relation(fields: [userId], references: [id])
   review Review @relation(fields: [reviewId], references: [id])
@@ -332,7 +332,7 @@ enum PaymentStatus {
 model Coupon {
   id            String   @id @unique @default(uuid())
   code          String   @unique
-  discount      Float
+  discount      String
   isActive      Boolean  @default(true)
   expiresAt     DateTime
   vendorStandId String?

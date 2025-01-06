@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.get(
   '/:id',
-  validateRequest(productValidation.getProductByIDSchema),
+  // validateRequest(productValidation.getProductByIDSchema),
   productController.getProductByID,
 );
 
@@ -33,9 +33,11 @@ router.patch(
   auth(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.VENDOR),
   fileUploader.upload.array('files', 10),
   (req: Request, res: Response, next: NextFunction) => {
+    console.log("API HITTED")
     req.body = productValidation.updateProductSchema.parse(
       JSON.parse(req.body.data),
     );
+    console.log("API HITTED")
     return productController.updateProduct(req, res, next);
   },
 );

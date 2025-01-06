@@ -9,7 +9,7 @@ const router = express.Router();
 
 router.get(
   '/:id',
-  auth(UserRole.VENDOR, UserRole.CUSTOMER),
+  // auth(UserRole.VENDOR, UserRole.CUSTOMER),
   cartController.getCartByID,
 );
 

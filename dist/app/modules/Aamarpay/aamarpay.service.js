@@ -26,7 +26,7 @@ const confirmationService = (transactionId, status, paymentId) => __awaiter(void
         yield payment_service_1.paymentService.updatePaymentStatus(paymentId, client_1.PaymentStatus.FAILED);
         message = 'Payment Failed!';
     }
-    const filePath = (0, path_1.join)(__dirname, '../../../views/confirmation.html');
+    const filePath = (0, path_1.join)(__dirname, '../../../../views/confirmation.html');
     let template = (0, fs_1.readFileSync)(filePath, 'utf-8');
     template = template.replace('{{message}}', message);
     console.log(status);

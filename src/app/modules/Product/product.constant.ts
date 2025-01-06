@@ -8,6 +8,7 @@ export const productFilterableFields: string[] = [
   'name',
   'searchTerm',
   'vendorStandId',
+  'category',
 ];
 
 export const productFilterableOptions: string[] = [

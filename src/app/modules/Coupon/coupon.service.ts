@@ -67,11 +67,13 @@ const getCouponByID = async (req: Request) => {
 const createCoupon = async (req: Request): Promise<Coupon> => {
   const { code, discount, expiresAt, vendorStandId } = req.body;
 
+  console.log(req.body);
+
   const result = await prisma.coupon.create({
     data: {
       code,
       discount,
-      expiresAt,
+      expiresAt: new Date(expiresAt),
       vendorStandId,
       isActive: true,
     },
@@ -81,16 +83,22 @@ const createCoupon = async (req: Request): Promise<Coupon> => {
 };
 
 const updateCoupon = async (req: Request): Promise<Coupon> => {
-  const { couponId, code, discount, expiresAt } = req.body;
+  const { couponId, code, discount, expiresAt, isActive } = req.body;
+
+  console.log('req.body: ', req.body);
 
   const existingCoupon = await prisma.coupon.findUniqueOrThrow({
     where: { id: couponId },
   });
 
+  console.log(existingCoupon);
+
   const result = await prisma.coupon.update({
     where: { id: existingCoupon.id },
-    data: { code, discount, expiresAt },
+    data: { code, discount, expiresAt, isActive },
   });
+
+  console.log(result);
 
   return result;
 };

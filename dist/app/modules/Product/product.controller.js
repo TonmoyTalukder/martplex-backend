@@ -32,7 +32,8 @@ const getAllProducts = (0, catchAsync_1.default)((req, res, next) => __awaiter(v
     });
 }));
 const getProductByID = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield product_service_1.productService.getProductByID(req);
+    const { id } = req.params;
+    const result = yield product_service_1.productService.getProductByID(id);
     (0, responseHelper_1.sendResponse)(res, {
         statusCode: http_status_codes_1.StatusCodes.OK,
         success: true,

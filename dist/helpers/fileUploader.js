@@ -14,7 +14,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fileUploader = void 0;
 const multer_1 = __importDefault(require("multer"));
-const path_1 = __importDefault(require("path"));
 const cloudinary_1 = require("cloudinary");
 const fs_1 = __importDefault(require("fs"));
 const config_1 = __importDefault(require("../app/config"));
@@ -23,9 +22,17 @@ cloudinary_1.v2.config({
     api_key: config_1.default.cloudinary.cloudinary_api_key,
     api_secret: config_1.default.cloudinary.cloudinary_secret,
 });
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, path.join(process.cwd(), 'uploads'));
+//   },
+//   filename: function (req, file, cb) {
+//     cb(null, file.originalname);
+//   },
+// });
 const storage = multer_1.default.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, path_1.default.join(process.cwd(), 'uploads'));
+        cb(null, '/tmp');
     },
     filename: function (req, file, cb) {
         cb(null, file.originalname);
@@ -45,7 +52,19 @@ const uploadToCloudinary = (file) => __awaiter(void 0, void 0, void 0, function*
         });
     });
 });
+const uploadMultipleToCloudinary = (files) => __awaiter(void 0, void 0, void 0, function* () {
+    const uploadPromises = files.map((file) => uploadToCloudinary(file));
+    const results = yield Promise.all(uploadPromises);
+    return results.filter((result) => result !== undefined);
+});
+const multipleImageUploader = {
+    upload: upload.array('images', 10), // Allow up to 10 images per request
+    uploadToCloudinary,
+    uploadMultipleToCloudinary,
+};
 exports.fileUploader = {
     upload,
     uploadToCloudinary,
+    multipleImageUploader,
+    uploadMultipleToCloudinary,
 };

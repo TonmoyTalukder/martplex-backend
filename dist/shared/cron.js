@@ -12,8 +12,27 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.scheduleJobs = void 0;
 const node_cron_1 = __importDefault(require("node-cron"));
 const prisma_1 = __importDefault(require("./prisma"));
+const incrementDay = () => __awaiter(void 0, void 0, void 0, function* () {
+    const dayCount = yield prisma_1.default.dayCount.findFirst();
+    if (!dayCount) {
+        // If no record exists, create the initial record
+        yield prisma_1.default.dayCount.create({
+            data: { day: 1 },
+        });
+        console.log('DayCount initialized with day = 1.');
+    }
+    else {
+        // Increment the day field by 1
+        yield prisma_1.default.dayCount.update({
+            where: { id: dayCount.id },
+            data: { day: dayCount.day + 1 },
+        });
+        console.log(`DayCount updated to day = ${dayCount.day + 1}.`);
+    }
+});
 const deleteOldCarts = () => __awaiter(void 0, void 0, void 0, function* () {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -22,11 +41,21 @@ const deleteOldCarts = () => __awaiter(void 0, void 0, void 0, function* () {
     });
 });
 const deleteExpiredCoupons = () => __awaiter(void 0, void 0, void 0, function* () {
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    return yield prisma_1.default.coupon.deleteMany({
-        where: { expiresAt: { lt: thirtyDaysAgo } },
-    });
+    // const thirtyDaysAgo = new Date();
+    // thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    // return await prisma.coupon.deleteMany({
+    //   where: { expiresAt: { lt: thirtyDaysAgo } },
+    // });
+    const now = new Date();
+    try {
+        const result = yield prisma_1.default.coupon.deleteMany({
+            where: { expiresAt: { lt: now } }, // Delete coupons where expiresAt is earlier than now
+        });
+        console.log(`${result.count} expired coupons have been deleted.`);
+    }
+    catch (error) {
+        console.error('Failed to delete expired coupons:', error);
+    }
 });
 const updateFlashSaleStatus = () => __awaiter(void 0, void 0, void 0, function* () {
     const currentDate = new Date();
@@ -68,27 +97,37 @@ function withRetries(task_1) {
         }
     });
 }
-node_cron_1.default.schedule('0 0 * * *', () => __awaiter(void 0, void 0, void 0, function* () {
-    const now = new Date().toISOString();
-    console.log(`[${now}] Starting scheduled cleanup task...`);
-    try {
-        // Delete old carts
-        yield withRetries(() => __awaiter(void 0, void 0, void 0, function* () {
-            const result = yield deleteOldCarts();
-            console.log(`${result.count} carts older than 30 days have been deleted.`);
-        }));
-        // Delete expired coupons
-        yield withRetries(() => __awaiter(void 0, void 0, void 0, function* () {
-            const result = yield deleteExpiredCoupons();
-            console.log(`${result.count} expired coupons have been deleted.`);
-        }));
-        // Update flash sale status
-        yield withRetries(() => __awaiter(void 0, void 0, void 0, function* () {
-            yield updateFlashSaleStatus();
-            console.log('FlashSale status updated successfully.');
-        }));
-    }
-    catch (error) {
-        console.error('Error deleting junks:', error);
-    }
-}));
+const scheduleJobs = () => {
+    node_cron_1.default.schedule('0 0 * * *', () => __awaiter(void 0, void 0, void 0, function* () {
+        const now = new Date().toISOString();
+        console.log(`[${now}] Starting scheduled cleanup task...`);
+        try {
+            // Increment the day count
+            yield withRetries(() => __awaiter(void 0, void 0, void 0, function* () {
+                yield incrementDay();
+                console.log('DayCount incremented successfully.');
+            }));
+            // // Delete old carts
+            // await withRetries(async () => {
+            //   const result = await deleteOldCarts();
+            //   console.log(
+            //     `${result.count} carts older than 30 days have been deleted.`,
+            //   );
+            // });
+            // Delete expired coupons
+            yield withRetries(() => __awaiter(void 0, void 0, void 0, function* () {
+                yield deleteExpiredCoupons();
+                console.log(`Expired coupons have been deleted.`);
+            }));
+            // Update flash sale status
+            yield withRetries(() => __awaiter(void 0, void 0, void 0, function* () {
+                yield updateFlashSaleStatus();
+                console.log('FlashSale status updated successfully.');
+            }));
+        }
+        catch (error) {
+            console.error('Error deleting junks:', error);
+        }
+    }));
+};
+exports.scheduleJobs = scheduleJobs;

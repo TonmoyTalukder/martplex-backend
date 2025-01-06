@@ -30,12 +30,24 @@ const deleteOldCarts = async () => {
 };
 
 const deleteExpiredCoupons = async () => {
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  // const thirtyDaysAgo = new Date();
+  // thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  return await prisma.coupon.deleteMany({
-    where: { expiresAt: { lt: thirtyDaysAgo } },
-  });
+  // return await prisma.coupon.deleteMany({
+  //   where: { expiresAt: { lt: thirtyDaysAgo } },
+  // });
+
+  const now = new Date();
+
+  try {
+    const result = await prisma.coupon.deleteMany({
+      where: { expiresAt: { lt: now } }, // Delete coupons where expiresAt is earlier than now
+    });
+
+    console.log(`${result.count} expired coupons have been deleted.`);
+  } catch (error) {
+    console.error('Failed to delete expired coupons:', error);
+  }
 };
 
 const updateFlashSaleStatus = async () => {
@@ -80,37 +92,39 @@ async function withRetries<T>(task: () => Promise<T>, retries = 3) {
   }
 }
 
-cron.schedule('0 0 * * *', async () => {
-  const now = new Date().toISOString();
-  console.log(`[${now}] Starting scheduled cleanup task...`);
+export const scheduleJobs = () => {
+  cron.schedule('0 0 * * *', async () => {
+    const now = new Date().toISOString();
+    console.log(`[${now}] Starting scheduled cleanup task...`);
 
-  try {
-    // Increment the day count
-    await withRetries(async () => {
-      await incrementDay();
-      console.log('DayCount incremented successfully.');
-    });
+    try {
+      // Increment the day count
+      await withRetries(async () => {
+        await incrementDay();
+        console.log('DayCount incremented successfully.');
+      });
 
-    // Delete old carts
-    await withRetries(async () => {
-      const result = await deleteOldCarts();
-      console.log(
-        `${result.count} carts older than 30 days have been deleted.`,
-      );
-    });
+      // // Delete old carts
+      // await withRetries(async () => {
+      //   const result = await deleteOldCarts();
+      //   console.log(
+      //     `${result.count} carts older than 30 days have been deleted.`,
+      //   );
+      // });
 
-    // Delete expired coupons
-    await withRetries(async () => {
-      const result = await deleteExpiredCoupons();
-      console.log(`${result.count} expired coupons have been deleted.`);
-    });
+      // Delete expired coupons
+      await withRetries(async () => {
+        await deleteExpiredCoupons();
+        console.log(`Expired coupons have been deleted.`);
+      });
 
-    // Update flash sale status
-    await withRetries(async () => {
-      await updateFlashSaleStatus();
-      console.log('FlashSale status updated successfully.');
-    });
-  } catch (error) {
-    console.error('Error deleting junks:', error);
-  }
-});
+      // Update flash sale status
+      await withRetries(async () => {
+        await updateFlashSaleStatus();
+        console.log('FlashSale status updated successfully.');
+      });
+    } catch (error) {
+      console.error('Error deleting junks:', error);
+    }
+  });
+};

@@ -77,11 +77,12 @@ const getCouponByID = (req) => __awaiter(void 0, void 0, void 0, function* () {
 });
 const createCoupon = (req) => __awaiter(void 0, void 0, void 0, function* () {
     const { code, discount, expiresAt, vendorStandId } = req.body;
+    console.log(req.body);
     const result = yield prisma_1.default.coupon.create({
         data: {
             code,
             discount,
-            expiresAt,
+            expiresAt: new Date(expiresAt),
             vendorStandId,
             isActive: true,
         },
@@ -89,14 +90,17 @@ const createCoupon = (req) => __awaiter(void 0, void 0, void 0, function* () {
     return result;
 });
 const updateCoupon = (req) => __awaiter(void 0, void 0, void 0, function* () {
-    const { couponId, code, discount, expiresAt } = req.body;
+    const { couponId, code, discount, expiresAt, isActive } = req.body;
+    console.log('req.body: ', req.body);
     const existingCoupon = yield prisma_1.default.coupon.findUniqueOrThrow({
         where: { id: couponId },
     });
+    console.log(existingCoupon);
     const result = yield prisma_1.default.coupon.update({
         where: { id: existingCoupon.id },
-        data: { code, discount, expiresAt },
+        data: { code, discount, expiresAt, isActive },
     });
+    console.log(result);
     return result;
 });
 const deleteCoupon = (couponId) => __awaiter(void 0, void 0, void 0, function* () {

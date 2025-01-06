@@ -46,6 +46,7 @@ const createCoupon = catchAsync(async (req, res, next) => {
 
 const updateCoupon = catchAsync(async (req, res, next) => {
   const result = await couponService.updateCoupon(req);
+  console.log('result ', result);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,

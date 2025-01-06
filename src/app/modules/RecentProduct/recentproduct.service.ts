@@ -52,6 +52,9 @@ const getAllRecentProducts = async (
       viewedAt: 'desc',
     },
     take: 10, // Get only the latest 10
+    include: {
+      product: true,
+    },
   });
 
   // Get the total count of recent products
@@ -89,7 +92,6 @@ const getAllRecentProducts = async (
   };
 };
 
-
 const getRecentProductByID = async (req: Request) => {
   const productInfo = await prisma.recentProduct.findUniqueOrThrow({
     where: {
@@ -115,23 +117,47 @@ const createRecentProduct = async (
 ): Promise<RecentProduct & { user: User; product: Product }> => {
   const { userId, productId, viewedAt } = req.body;
 
-  const result = await prisma.recentProduct.create({
-    data: {
+  const existingRecentProduct = await prisma.recentProduct.findFirst({
+    where: {
       userId,
       productId,
-      viewedAt,
-    },
-    include: {
-      user: true,
-      product: true,
     },
   });
+
+  let result;
+
+  if (existingRecentProduct !== null) {
+    result = await prisma.recentProduct.update({
+      where: {
+        id: existingRecentProduct.id,
+      },
+      data: {
+        viewedAt,
+      },
+      include: {
+        user: true,
+        product: true,
+      },
+    });
+  } else {
+    result = await prisma.recentProduct.create({
+      data: {
+        userId,
+        productId,
+        viewedAt,
+      },
+      include: {
+        user: true,
+        product: true,
+      },
+    });
+  }
 
   return result;
 };
 
 const updateRecentProduct = async (id: string, viewedAt: Date) => {
-  await prisma.recentProduct.findUniqueOrThrow({
+  const existingRecentProduct = await prisma.recentProduct.findUniqueOrThrow({
     where: {
       id,
     },
@@ -139,7 +165,7 @@ const updateRecentProduct = async (id: string, viewedAt: Date) => {
 
   const productInfo = await prisma.recentProduct.update({
     where: {
-      id,
+      id: existingRecentProduct.id,
     },
     data: {
       viewedAt,

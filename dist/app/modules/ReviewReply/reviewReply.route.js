@@ -14,9 +14,19 @@ const router = express_1.default.Router();
 router.get('/:id', (0, auth_1.default)(client_1.UserRole.SUPER_ADMIN, client_1.UserRole.ADMIN, client_1.UserRole.VENDOR, client_1.UserRole.CUSTOMER), (0, validateRequest_1.default)(reviewReply_validation_1.reviewReplyValidation.getReviewReplyByIDSchema), reviewReply_controller_1.reviewReplyController.getReviewReplyByID);
 router.get('/', reviewReply_controller_1.reviewReplyController.getAllReviewReplies);
 router.post('/create', (0, auth_1.default)(client_1.UserRole.CUSTOMER), (0, validateRequest_1.default)(reviewReply_validation_1.reviewReplyValidation.createReviewSchema), reviewReply_controller_1.reviewReplyController.createReview);
-router.post('/reply/create', (0, auth_1.default)(client_1.UserRole.CUSTOMER, client_1.UserRole.VENDOR), (0, validateRequest_1.default)(reviewReply_validation_1.reviewReplyValidation.createReplySchema), reviewReply_controller_1.reviewReplyController.createReply);
-router.put('/:id/update', (0, auth_1.default)(client_1.UserRole.CUSTOMER), (0, validateRequest_1.default)(reviewReply_validation_1.reviewReplyValidation.updateReviewSchema), reviewReply_controller_1.reviewReplyController.updateReview);
-router.post('/reply/:id/update', (0, auth_1.default)(client_1.UserRole.CUSTOMER, client_1.UserRole.VENDOR), (0, validateRequest_1.default)(reviewReply_validation_1.reviewReplyValidation.updateReplySchema), reviewReply_controller_1.reviewReplyController.updateReply);
-router.patch('/:id/delete', (0, auth_1.default)(client_1.UserRole.ADMIN, client_1.UserRole.CUSTOMER, client_1.UserRole.SUPER_ADMIN), (0, validateRequest_1.default)(reviewReply_validation_1.reviewReplyValidation.deleteReviewSchema), reviewReply_controller_1.reviewReplyController.deleteReview);
-router.patch('/reply/:id/delete', (0, auth_1.default)(client_1.UserRole.ADMIN, client_1.UserRole.CUSTOMER, client_1.UserRole.VENDOR, client_1.UserRole.SUPER_ADMIN), (0, validateRequest_1.default)(reviewReply_validation_1.reviewReplyValidation.deleteReplySchema), reviewReply_controller_1.reviewReplyController.deleteReply);
+router.post('/reply/create', (0, auth_1.default)(client_1.UserRole.CUSTOMER, client_1.UserRole.VENDOR), 
+// validateRequest(reviewReplyValidation.createReplySchema),
+reviewReply_controller_1.reviewReplyController.createReply);
+router.patch('/:id/update', (0, auth_1.default)(client_1.UserRole.CUSTOMER), 
+// validateRequest(reviewReplyValidation.updateReviewSchema),
+reviewReply_controller_1.reviewReplyController.updateReview);
+router.patch('/reply/:id/update', (0, auth_1.default)(client_1.UserRole.CUSTOMER, client_1.UserRole.VENDOR), 
+// validateRequest(reviewReplyValidation.updateReplySchema),
+reviewReply_controller_1.reviewReplyController.updateReply);
+router.patch('/:id/delete', (0, auth_1.default)(client_1.UserRole.ADMIN, client_1.UserRole.CUSTOMER, client_1.UserRole.SUPER_ADMIN), 
+// validateRequest(reviewReplyValidation.deleteReviewSchema),
+reviewReply_controller_1.reviewReplyController.deleteReview);
+router.patch('/reply/:id/delete', (0, auth_1.default)(client_1.UserRole.ADMIN, client_1.UserRole.CUSTOMER, client_1.UserRole.VENDOR, client_1.UserRole.SUPER_ADMIN), 
+// validateRequest(reviewReplyValidation.deleteReplySchema),
+reviewReply_controller_1.reviewReplyController.deleteReply);
 exports.reviewReplyRoutes = router;

@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.paymentValidation = void 0;
-const client_1 = require("@prisma/client");
 const zod_1 = require("zod");
 // Schema for getting payment by ID
 const getPaymentByIDSchema = zod_1.z.object({
@@ -12,7 +11,10 @@ const getPaymentByIDSchema = zod_1.z.object({
 // Schema for updating payment method
 const updatePaymentMethodSchema = zod_1.z.object({
     paymentId: zod_1.z.string().uuid(),
-    paymentMethod: zod_1.z.nativeEnum(client_1.PaymentMethod),
+    paymentMethod: zod_1.z.string(),
+    userId: zod_1.z.string(),
+    deliveryAddress: zod_1.z.string(),
+    deliveryPhone: zod_1.z.string(),
 });
 // Schema for deleting an unsuccessful payment
 const deleteUnsuccessfulPaymentSchema = zod_1.z.object({

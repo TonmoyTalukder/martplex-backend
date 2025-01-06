@@ -70,6 +70,13 @@ const getAllVendorStands = (params, options) => __awaiter(void 0, void 0, void 0
             },
         include: {
             owner: true,
+            products: {
+                include: {
+                    category: true,
+                    reviews: true,
+                    vendorStand: true,
+                },
+            },
         },
     });
     const sanitizedResult = result.map((vendorStand) => {
@@ -104,6 +111,13 @@ const getVendorStandByID = (id) => __awaiter(void 0, void 0, void 0, function* (
         },
         include: {
             owner: true,
+            products: {
+                include: {
+                    category: true,
+                    reviews: true,
+                    vendorStand: true,
+                },
+            },
         },
     });
     if (vendorStandInfo.owner) {

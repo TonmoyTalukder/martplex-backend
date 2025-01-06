@@ -33,13 +33,14 @@ router.get(
 
 router.post(
   '/create-recent-product',
-  auth(
-    UserRole.ADMIN,
-    UserRole.SUPER_ADMIN,
-    UserRole.VENDOR,
-    UserRole.CUSTOMER,
-  ),
-  validateRequest(recentProductValidation.createRecentProductSchema),
+  // auth(
+  //   UserRole.ADMIN,
+  //   UserRole.SUPER_ADMIN,
+  //   UserRole.VENDOR,
+  //   UserRole.CUSTOMER,
+  // ),
+  
+  // validateRequest(recentProductValidation.createRecentProductSchema),
   recentProductController.createRecentProduct,
 );
 

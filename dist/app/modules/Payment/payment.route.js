@@ -15,7 +15,9 @@ const aamarpay_controller_1 = require("../Aamarpay/aamarpay.controller");
 const router = express_1.default.Router();
 router.get('/:id', (0, auth_1.default)(client_1.UserRole.SUPER_ADMIN, client_1.UserRole.ADMIN, client_1.UserRole.VENDOR, client_1.UserRole.CUSTOMER), (0, validateRequest_1.default)(payment_validation_1.paymentValidation.getPaymentByIDSchema), payment_controller_1.paymentController.getPaymentByID);
 router.get('/', (0, auth_1.default)(client_1.UserRole.SUPER_ADMIN, client_1.UserRole.ADMIN, client_1.UserRole.VENDOR, client_1.UserRole.CUSTOMER), payment_controller_1.paymentController.getAllPayments);
-router.patch('/:id/update/payment-method', (0, auth_1.default)(client_1.UserRole.SUPER_ADMIN, client_1.UserRole.ADMIN, client_1.UserRole.CUSTOMER), (0, validateRequest_1.default)(payment_validation_1.paymentValidation.updatePaymentMethodSchema), payment_controller_1.paymentController.updatePaymentMethod);
+router.patch('/update/payment-method', (0, auth_1.default)(client_1.UserRole.SUPER_ADMIN, client_1.UserRole.ADMIN, client_1.UserRole.CUSTOMER), 
+// validateRequest(paymentValidation.updatePaymentMethodSchema),
+payment_controller_1.paymentController.updatePaymentMethod);
 router.patch('/unsuccessful/:id/delete', (0, auth_1.default)(client_1.UserRole.ADMIN, client_1.UserRole.SUPER_ADMIN), (0, validateRequest_1.default)(payment_validation_1.paymentValidation.deleteUnsuccessfulPaymentSchema), payment_controller_1.paymentController.deleteUnsuccessfulPayment);
 router.patch('/:id/delete', (0, auth_1.default)(client_1.UserRole.ADMIN, client_1.UserRole.SUPER_ADMIN), (0, validateRequest_1.default)(payment_validation_1.paymentValidation.deletePaymentSchema), payment_controller_1.paymentController.deletePayment);
 // Route to initiate payment for a payment

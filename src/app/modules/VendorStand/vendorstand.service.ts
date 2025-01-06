@@ -62,6 +62,13 @@ const getAllVendorStands = async (params: any, options: IPaginationOptions) => {
           },
     include: {
       owner: true,
+      products: {
+        include: {
+          category: true,
+          reviews: true,
+          vendorStand: true,
+        },
+      },
     },
   });
 
@@ -100,6 +107,13 @@ const getVendorStandByID = async (id: string) => {
     },
     include: {
       owner: true,
+      products: {
+        include: {
+          category: true,
+          reviews: true,
+          vendorStand: true,
+        },
+      },
     },
   });
 

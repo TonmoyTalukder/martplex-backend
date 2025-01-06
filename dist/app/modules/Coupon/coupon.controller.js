@@ -51,6 +51,7 @@ const createCoupon = (0, catchAsync_1.default)((req, res, next) => __awaiter(voi
 }));
 const updateCoupon = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield coupon_service_1.couponService.updateCoupon(req);
+    console.log('result ', result);
     (0, responseHelper_1.sendResponse)(res, {
         statusCode: http_status_codes_1.StatusCodes.OK,
         success: true,

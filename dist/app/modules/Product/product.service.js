@@ -91,10 +91,10 @@ const getAllProducts = (params, options) => __awaiter(void 0, void 0, void 0, fu
         data: result,
     };
 });
-const getProductByID = (req) => __awaiter(void 0, void 0, void 0, function* () {
+const getProductByID = (id) => __awaiter(void 0, void 0, void 0, function* () {
     const productInfo = yield prisma_1.default.product.findUniqueOrThrow({
         where: {
-            id: req.body.id,
+            id: id,
             isDeleted: false,
             vendorStand: {
                 status: client_1.VendorStandStatus.ACTIVE,
@@ -110,9 +110,22 @@ const getProductByID = (req) => __awaiter(void 0, void 0, void 0, function* () {
         },
         include: {
             vendorStand: true,
-            categories: true,
-            orderItems: true,
-            reviews: true,
+            category: true,
+            orderItems: {
+                include: {
+                    order: true,
+                },
+            },
+            reviews: {
+                include: {
+                    user: true,
+                    reply: {
+                        include: {
+                            user: true,
+                        },
+                    },
+                },
+            },
             reportProduct: true,
         },
     });
@@ -197,14 +210,15 @@ const updateProduct = (id, req) => __awaiter(void 0, void 0, void 0, function* (
             }
         }
     }
-    // Include images in payload
-    const payload = Object.assign(Object.assign({}, restPayload), { images: imageUrls.length > 0 ? imageUrls : undefined });
+    // Construct payload
+    const payload = Object.assign(Object.assign({}, restPayload), { // Include the rest of the payload
+        categoryId, images: imageUrls.length > 0 ? imageUrls : undefined });
+    console.log('Constructed Payload:', payload);
     // Update product
     const productInfo = yield prisma_1.default.product.update({
         where: { id },
         data: payload,
     });
-    console.log(payload);
     return { productInfo };
 });
 const softDelete = (id) => __awaiter(void 0, void 0, void 0, function* () {

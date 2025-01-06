@@ -58,6 +58,9 @@ const getAllRecentProducts = (params, options) => __awaiter(void 0, void 0, void
             viewedAt: 'desc',
         },
         take: 10, // Get only the latest 10
+        include: {
+            product: true,
+        },
     });
     // Get the total count of recent products
     const total = yield prisma_1.default.recentProduct.count({
@@ -109,28 +112,51 @@ const getRecentProductByID = (req) => __awaiter(void 0, void 0, void 0, function
 });
 const createRecentProduct = (req) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId, productId, viewedAt } = req.body;
-    const result = yield prisma_1.default.recentProduct.create({
-        data: {
+    const existingRecentProduct = yield prisma_1.default.recentProduct.findFirst({
+        where: {
             userId,
             productId,
-            viewedAt,
-        },
-        include: {
-            user: true,
-            product: true,
         },
     });
+    let result;
+    if (existingRecentProduct !== null) {
+        result = yield prisma_1.default.recentProduct.update({
+            where: {
+                id: existingRecentProduct.id,
+            },
+            data: {
+                viewedAt,
+            },
+            include: {
+                user: true,
+                product: true,
+            },
+        });
+    }
+    else {
+        result = yield prisma_1.default.recentProduct.create({
+            data: {
+                userId,
+                productId,
+                viewedAt,
+            },
+            include: {
+                user: true,
+                product: true,
+            },
+        });
+    }
     return result;
 });
 const updateRecentProduct = (id, viewedAt) => __awaiter(void 0, void 0, void 0, function* () {
-    yield prisma_1.default.recentProduct.findUniqueOrThrow({
+    const existingRecentProduct = yield prisma_1.default.recentProduct.findUniqueOrThrow({
         where: {
             id,
         },
     });
     const productInfo = yield prisma_1.default.recentProduct.update({
         where: {
-            id,
+            id: existingRecentProduct.id,
         },
         data: {
             viewedAt,

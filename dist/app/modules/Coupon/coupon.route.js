@@ -13,7 +13,14 @@ const coupon_controller_1 = require("./coupon.controller");
 const router = express_1.default.Router();
 router.get('/:id', (0, auth_1.default)(client_1.UserRole.VENDOR), (0, validateRequest_1.default)(coupon_validation_1.couponValidation.getCouponByIDSchema), coupon_controller_1.couponController.getCouponByID);
 router.get('/', coupon_controller_1.couponController.getAllCoupons);
-router.post('/create-coupon', (0, auth_1.default)(client_1.UserRole.VENDOR), (0, validateRequest_1.default)(coupon_validation_1.couponValidation.createCouponSchema), coupon_controller_1.couponController.createCoupon);
-router.put('/:id/update-coupon', (0, auth_1.default)(client_1.UserRole.VENDOR), (0, validateRequest_1.default)(coupon_validation_1.couponValidation.updateCouponSchema), coupon_controller_1.couponController.updateCoupon);
-router.patch('/:id/delete', (0, auth_1.default)(client_1.UserRole.VENDOR), (0, validateRequest_1.default)(coupon_validation_1.couponValidation.deleteCouponSchema), coupon_controller_1.couponController.deleteCoupon);
+router.post('/create-coupon', (0, auth_1.default)(client_1.UserRole.VENDOR), 
+// validateRequest(couponValidation.createCouponSchema),
+coupon_controller_1.couponController.createCoupon);
+router.patch('/update-coupon', 
+// auth(UserRole.VENDOR),
+// validateRequest(couponValidation.updateCouponSchema),
+coupon_controller_1.couponController.updateCoupon);
+router.patch('/:id/delete', (0, auth_1.default)(client_1.UserRole.VENDOR), 
+// validateRequest(couponValidation.deleteCouponSchema),
+coupon_controller_1.couponController.deleteCoupon);
 exports.couponRoutes = router;

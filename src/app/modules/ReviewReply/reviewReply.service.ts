@@ -38,6 +38,9 @@ const getAllReviewReplies = async (
         : {
             createdAt: 'desc',
           },
+    include: {
+      user: true,
+    },
   });
 
   const total = await prisma.review.count({

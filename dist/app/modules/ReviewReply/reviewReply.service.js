@@ -51,6 +51,9 @@ const getAllReviewReplies = (params, options) => __awaiter(void 0, void 0, void 
             : {
                 createdAt: 'desc',
             },
+        include: {
+            user: true,
+        },
     });
     const total = yield prisma_1.default.review.count({
         where: whereConditions,

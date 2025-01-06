@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.cartService = void 0;
 const prisma_1 = __importDefault(require("../../../shared/prisma"));
 const getCartByID = (id, req) => __awaiter(void 0, void 0, void 0, function* () {
+    // return { message: 'Cart is empty' };
     const cartInfo = yield prisma_1.default.cart.findUniqueOrThrow({
         where: {
             userId: id,
@@ -35,7 +36,6 @@ const createCart = (req) => __awaiter(void 0, void 0, void 0, function* () {
     const existingCart = yield prisma_1.default.cart.findFirst({
         where: {
             userId,
-            vendorId: vendorStandId,
         },
         include: {
             items: true,
@@ -46,6 +46,14 @@ const createCart = (req) => __awaiter(void 0, void 0, void 0, function* () {
         let cartItems;
         ``;
         if (existingCart) {
+            yield prisma.cart.update({
+                where: {
+                    userId,
+                },
+                data: {
+                    vendorId: vendorStandId,
+                },
+            });
             // Update existing cart by adding new items
             const currentItemIds = existingCart.items.map((item) => item.productId);
             const newItems = items.filter((item) => !currentItemIds.includes(item.productId));
@@ -204,15 +212,18 @@ const deleteCartItem = (cartItemId) => __awaiter(void 0, void 0, void 0, functio
             items: true,
         },
     });
-    yield prisma_1.default.cartItem.delete({
-        where: { id: cartItemId },
-    });
-    if (existingCart.items.length === 0) {
-        // Delete the Cart
-        yield prisma_1.default.cart.delete({
-            where: { id: existingCart.id },
+    yield prisma_1.default.$transaction((prisma) => __awaiter(void 0, void 0, void 0, function* () {
+        yield prisma.cartItem.delete({
+            where: { id: cartItemId },
         });
-    }
+        // if (existingCart.items.length === 1) {
+        //   // Delete the Cart
+        //   await prisma.cart.update({
+        //     where: { id: existingCart.id },
+        //     data: { vendorId: '' },
+        //   });
+        // }
+    }));
     return { message: 'Cart Items deleted successfully.' };
 });
 exports.cartService = {

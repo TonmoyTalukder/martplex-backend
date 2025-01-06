@@ -49,6 +49,17 @@ router.put(
   orderController.updateOrder,
 );
 
+router.patch(
+  '/update-order-status',
+  auth(
+    UserRole.SUPER_ADMIN,
+    UserRole.ADMIN,
+    UserRole.VENDOR,
+    UserRole.CUSTOMER,
+  ),
+  orderController.updateOrderStatus,
+);
+
 router.post(
   '/order-item/:id/update',
   auth(

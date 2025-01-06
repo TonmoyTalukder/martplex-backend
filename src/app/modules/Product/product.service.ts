@@ -86,10 +86,10 @@ const getAllProducts = async (params: any, options: IPaginationOptions) => {
   };
 };
 
-const getProductByID = async (req: Request) => {
+const getProductByID = async (id: string) => {
   const productInfo = await prisma.product.findUniqueOrThrow({
     where: {
-      id: req.body.id,
+      id: id,
       isDeleted: false,
       vendorStand: {
         status: VendorStandStatus.ACTIVE,
@@ -105,9 +105,22 @@ const getProductByID = async (req: Request) => {
     },
     include: {
       vendorStand: true,
-      categories: true,
-      orderItems: true,
-      reviews: true,
+      category: true,
+      orderItems: {
+        include: {
+          order: true,
+        },
+      },
+      reviews: {
+        include: {
+          user: true, 
+          reply: {
+            include: {
+              user: true, 
+            },
+          },
+        },
+      },
       reportProduct: true,
     },
   });
@@ -212,19 +225,20 @@ const updateProduct = async (id: string, req: Request) => {
     }
   }
 
-  // Include images in payload
-  const payload = {
-    ...restPayload,
-    images: imageUrls.length > 0 ? imageUrls : undefined,
+  // Construct payload
+  const payload: any = {
+    ...restPayload, // Include the rest of the payload
+    categoryId, // Explicitly include categoryId
+    images: imageUrls.length > 0 ? imageUrls : undefined, // Add images if available
   };
+
+  console.log('Constructed Payload:', payload);
 
   // Update product
   const productInfo = await prisma.product.update({
     where: { id },
     data: payload,
   });
-
-  console.log(payload);
 
   return { productInfo };
 };

@@ -19,21 +19,21 @@ router.get('/', couponController.getAllCoupons);
 router.post(
   '/create-coupon',
   auth(UserRole.VENDOR),
-  validateRequest(couponValidation.createCouponSchema),
+  // validateRequest(couponValidation.createCouponSchema),
   couponController.createCoupon,
 );
 
-router.put(
-  '/:id/update-coupon',
-  auth(UserRole.VENDOR),
-  validateRequest(couponValidation.updateCouponSchema),
+router.patch(
+  '/update-coupon',
+  // auth(UserRole.VENDOR),
+  // validateRequest(couponValidation.updateCouponSchema),
   couponController.updateCoupon,
 );
 
 router.patch(
   '/:id/delete',
   auth(UserRole.VENDOR),
-  validateRequest(couponValidation.deleteCouponSchema),
+  // validateRequest(couponValidation.deleteCouponSchema),
   couponController.deleteCoupon,
 );
 
