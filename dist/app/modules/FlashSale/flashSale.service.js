@@ -73,30 +73,66 @@ const getFlashSaleByID = (req) => __awaiter(void 0, void 0, void 0, function* ()
     return { flashSaleInfo };
 });
 const createFlashSale = (req) => __awaiter(void 0, void 0, void 0, function* () {
-    const { name, description, discount, startsAt, endsAt, coupon } = req.body;
-    const result = yield prisma_1.default.flashSale.create({
-        data: {
-            name,
-            description,
-            discount,
-            startsAt,
-            endsAt,
-            coupon,
-            isActive: true,
-        },
-    });
+    const { name, description, discount, startsAt, endsAt, productIds } = req.body;
+    const result = yield prisma_1.default.$transaction((prisma) => __awaiter(void 0, void 0, void 0, function* () {
+        const flashSale = yield prisma.flashSale.create({
+            data: {
+                name,
+                description,
+                discount,
+                startsAt,
+                endsAt,
+                isActive: true,
+                products: {
+                    connect: productIds.map((id) => ({ id })),
+                },
+            },
+        });
+        yield prisma.product.updateMany({
+            where: {
+                id: { in: productIds },
+            },
+            data: {
+                flashSale: true,
+            },
+        });
+        return flashSale;
+    }));
     return result;
 });
 const updateFlashSale = (req) => __awaiter(void 0, void 0, void 0, function* () {
-    const { flashSaleId, name, description, discount, startsAt, endsAt, coupon } = req.body;
+    const { flashSaleId, name, description, discount, startsAt, endsAt, isActive, } = req.body;
     const existingFlashSale = yield prisma_1.default.flashSale.findUniqueOrThrow({
         where: { id: flashSaleId },
     });
     const result = yield prisma_1.default.flashSale.update({
         where: { id: existingFlashSale.id },
-        data: { name, description, discount, startsAt, endsAt, coupon },
+        data: { name, description, discount, startsAt, endsAt, isActive },
     });
+    if (!isActive) {
+        // Set flashSale field to false for associated products
+        yield prisma_1.default.product.updateMany({
+            where: { flashSaleId },
+            data: { flashSale: false },
+        });
+    }
     return result;
+});
+const updateFlashSaleStatus = (req) => __awaiter(void 0, void 0, void 0, function* () {
+    const { flashSaleId, isActive } = req.body;
+    // Update the flash sale status
+    const flashSale = yield prisma_1.default.flashSale.update({
+        where: { id: flashSaleId },
+        data: { isActive },
+    });
+    if (!isActive) {
+        // Set flashSale field to false for associated products
+        yield prisma_1.default.product.updateMany({
+            where: { flashSaleId },
+            data: { flashSale: false },
+        });
+    }
+    return flashSale;
 });
 const deleteFlashSale = (flashSaleId) => __awaiter(void 0, void 0, void 0, function* () {
     if (!flashSaleId) {
@@ -112,5 +148,6 @@ exports.flashSaleService = {
     getFlashSaleByID,
     createFlashSale,
     updateFlashSale,
+    updateFlashSaleStatus,
     deleteFlashSale,
 };

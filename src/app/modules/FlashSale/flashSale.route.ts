@@ -9,8 +9,8 @@ const router = express.Router();
 
 router.get(
   '/:id',
-  auth(UserRole.VENDOR),
-  validateRequest(flashSaleValidation.getFlashSaleByIDSchema),
+  // auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  // validateRequest(flashSaleValidation.getFlashSaleByIDSchema),
   flashSaleController.getFlashSaleByID,
 );
 
@@ -18,22 +18,28 @@ router.get('/', flashSaleController.getAllFlashSales);
 
 router.post(
   '/create',
-  auth(UserRole.VENDOR),
-  validateRequest(flashSaleValidation.createFlashSaleSchema),
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  // validateRequest(flashSaleValidation.createFlashSaleSchema),
   flashSaleController.createFlashSale,
 );
 
 router.put(
-  '/:id/update',
-  auth(UserRole.VENDOR),
-  validateRequest(flashSaleValidation.updateFlashSaleSchema),
+  '/update',
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  // validateRequest(flashSaleValidation.updateFlashSaleSchema),
   flashSaleController.updateFlashSale,
+);
+
+router.put(
+  '/update-status',
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  flashSaleController.updateFlashSaleStatus,
 );
 
 router.patch(
   '/:id/delete',
-  auth(UserRole.VENDOR),
-  validateRequest(flashSaleValidation.deleteFlashSaleSchema),
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  // validateRequest(flashSaleValidation.deleteFlashSaleSchema),
   flashSaleController.deleteFlashSale,
 );
 

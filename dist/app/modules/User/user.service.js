@@ -61,8 +61,6 @@ const client_1 = require("@prisma/client");
 const bcrypt = __importStar(require("bcrypt"));
 const prisma_1 = __importDefault(require("../../../shared/prisma"));
 const fileUploader_1 = require("../../../helpers/fileUploader");
-const paginationHelper_1 = require("../../../helpers/paginationHelper");
-const user_constant_1 = require("./user.constant");
 const jwtHelpers_1 = require("../../../helpers/jwtHelpers");
 const config_1 = __importDefault(require("../../config"));
 const createAdmin = (req) => __awaiter(void 0, void 0, void 0, function* () {
@@ -70,16 +68,16 @@ const createAdmin = (req) => __awaiter(void 0, void 0, void 0, function* () {
     if (!email || !name || !phoneNumber || !password) {
         throw new Error('Missing required fields: email, name, phoneNumber, or password.');
     }
-    // Find the user with email and isDeleted=false
-    const user = yield prisma_1.default.user.findFirst({
-        where: {
-            email,
-            isDeleted: false,
-        },
-    });
-    if (!user) {
-        throw new Error('User not found or marked as deleted.');
-    }
+    // // Find the user with email and isDeleted=false
+    // const user = await prisma.user.findFirst({
+    //   where: {
+    //     email,
+    //     isDeleted: false,
+    //   },
+    // });
+    // if (!user) {
+    //   throw new Error('User not found or marked as deleted.');
+    // }
     // Hash the password
     const hashedPassword = yield bcrypt.hash(password, 12);
     // Upsert the user to become an admin
@@ -102,54 +100,54 @@ const createAdmin = (req) => __awaiter(void 0, void 0, void 0, function* () {
     });
     return result;
 });
-const getAllFromDB = (params, options) => __awaiter(void 0, void 0, void 0, function* () {
-    const { limit, page, skip, sortBy, sortOrder } = paginationHelper_1.paginationHelper.calculatePagination(options);
-    const { searchTerm } = params, filterData = __rest(params, ["searchTerm"]);
-    const andCondition = [];
-    if (searchTerm) {
-        andCondition.push({
-            OR: user_constant_1.userSearchableFields.map((field) => ({
-                [field]: {
-                    contains: searchTerm,
-                    mode: 'insensitive',
-                },
-            })),
-        });
-    }
-    if (Object.keys(filterData).length > 0) {
-        andCondition.push({
-            AND: Object.keys(filterData).map((key) => ({
-                [key]: {
-                    equals: filterData[key],
-                },
-            })),
-        });
-    }
-    const whereConditions = andCondition.length > 0 ? { AND: andCondition } : {};
-    const role = whereConditions.role && typeof whereConditions.role === 'string'
-        ? whereConditions.role
-        : undefined;
-    const result = yield prisma_1.default.user.findMany({
-        where: whereConditions,
-        skip,
-        take: limit,
-        orderBy: sortBy && sortOrder
-            ? {
-                [sortBy]: sortOrder,
-            }
-            : {
-                createdAt: 'desc',
-            },
-    });
-    const total = yield prisma_1.default.user.count({
-        where: whereConditions,
-    });
+const getAllFromDB = () => __awaiter(void 0, void 0, void 0, function* () {
+    // const { limit, page, skip, sortBy, sortOrder } =
+    //   paginationHelper.calculatePagination(options);
+    // const { searchTerm, ...filterData } = params;
+    // const andCondition: Prisma.UserWhereInput[] = [];
+    // if (searchTerm) {
+    //   andCondition.push({
+    //     OR: userSearchableFields.map((field) => ({
+    //       [field]: {
+    //         contains: searchTerm,
+    //         mode: 'insensitive',
+    //       },
+    //     })),
+    //   });
+    // }
+    // if (Object.keys(filterData).length > 0) {
+    //   andCondition.push({
+    //     AND: Object.keys(filterData).map((key) => ({
+    //       [key]: {
+    //         equals: (filterData as any)[key],
+    //       },
+    //     })),
+    //   });
+    // }
+    // const whereConditions: Prisma.UserWhereInput =
+    //   andCondition.length > 0 ? { AND: andCondition } : {};
+    // const role =
+    //   whereConditions.role && typeof whereConditions.role === 'string'
+    //     ? whereConditions.role
+    //     : undefined;
+    const result = yield prisma_1.default.user.findMany();
+    // const total = await prisma.user.count({
+    //   where: whereConditions,
+    // });
+    // {
+    //   where: whereConditions,
+    //   skip,
+    //   take: limit,
+    //   orderBy:
+    //     sortBy && sortOrder
+    //       ? {
+    //           [sortBy]: sortOrder,
+    //         }
+    //       : {
+    //           createdAt: 'desc',
+    //         },
+    // }
     return {
-        meta: {
-            page,
-            limit,
-            total,
-        },
         data: result,
     };
 });

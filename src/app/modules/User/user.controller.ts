@@ -19,15 +19,15 @@ const createAdmin = catchAsync(async (req, res, next) => {
 });
 
 const getAllFromDB = catchAsync(async (req, res, next) => {
-  const filters = pick(req.query, userFilterableFields);
-  const options = pick(req.query, userFilterableOptions);
-  const result = await userService.getAllFromDB(filters, options);
+  // const filters = pick(req.query, userFilterableFields);
+  // const options = pick(req.query, userFilterableOptions);
+  const result = await userService.getAllFromDB();
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
     message: 'Users data fetched!',
-    meta: result.meta,
+    // meta: result.meta,
     data: result.data,
   });
 });

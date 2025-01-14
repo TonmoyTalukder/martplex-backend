@@ -71,26 +71,49 @@ const getFlashSaleByID = async (req: Request) => {
 };
 
 const createFlashSale = async (req: Request): Promise<FlashSale> => {
-  const { name, description, discount, startsAt, endsAt, coupon } = req.body;
+  const { name, description, discount, startsAt, endsAt, productIds } =
+    req.body;
 
-  const result = await prisma.flashSale.create({
-    data: {
-      name,
-      description,
-      discount,
-      startsAt,
-      endsAt,
-      coupon,
-      isActive: true,
-    },
+  const result = await prisma.$transaction(async (prisma) => {
+    const flashSale = await prisma.flashSale.create({
+      data: {
+        name,
+        description,
+        discount,
+        startsAt,
+        endsAt,
+        isActive: true,
+        products: {
+          connect: productIds.map((id: string) => ({ id })),
+        },
+      },
+    });
+
+    await prisma.product.updateMany({
+      where: {
+        id: { in: productIds },
+      },
+      data: {
+        flashSale: true,
+      },
+    });
+
+    return flashSale;
   });
 
   return result;
 };
 
 const updateFlashSale = async (req: Request): Promise<FlashSale> => {
-  const { flashSaleId, name, description, discount, startsAt, endsAt, coupon } =
-    req.body;
+  const {
+    flashSaleId,
+    name,
+    description,
+    discount,
+    startsAt,
+    endsAt,
+    isActive,
+  } = req.body;
 
   const existingFlashSale = await prisma.flashSale.findUniqueOrThrow({
     where: { id: flashSaleId },
@@ -98,10 +121,38 @@ const updateFlashSale = async (req: Request): Promise<FlashSale> => {
 
   const result = await prisma.flashSale.update({
     where: { id: existingFlashSale.id },
-    data: { name, description, discount, startsAt, endsAt, coupon },
+    data: { name, description, discount, startsAt, endsAt, isActive },
   });
+  
+  if (!isActive) {
+    // Set flashSale field to false for associated products
+    await prisma.product.updateMany({
+      where: { flashSaleId },
+      data: { flashSale: false },
+    });
+  }
 
   return result;
+};
+
+const updateFlashSaleStatus = async (req: Request): Promise<FlashSale> => {
+  const { flashSaleId, isActive } = req.body;
+
+  // Update the flash sale status
+  const flashSale = await prisma.flashSale.update({
+    where: { id: flashSaleId },
+    data: { isActive },
+  });
+
+  if (!isActive) {
+    // Set flashSale field to false for associated products
+    await prisma.product.updateMany({
+      where: { flashSaleId },
+      data: { flashSale: false },
+    });
+  }
+
+  return flashSale;
 };
 
 const deleteFlashSale = async (
@@ -123,5 +174,6 @@ export const flashSaleService = {
   getFlashSaleByID,
   createFlashSale,
   updateFlashSale,
+  updateFlashSaleStatus,
   deleteFlashSale,
 };

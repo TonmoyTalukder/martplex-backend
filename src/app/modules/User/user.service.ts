@@ -21,17 +21,17 @@ const createAdmin = async (req: Request): Promise<User> => {
     );
   }
 
-  // Find the user with email and isDeleted=false
-  const user = await prisma.user.findFirst({
-    where: {
-      email,
-      isDeleted: false,
-    },
-  });
+  // // Find the user with email and isDeleted=false
+  // const user = await prisma.user.findFirst({
+  //   where: {
+  //     email,
+  //     isDeleted: false,
+  //   },
+  // });
 
-  if (!user) {
-    throw new Error('User not found or marked as deleted.');
-  }
+  // if (!user) {
+  //   throw new Error('User not found or marked as deleted.');
+  // }
 
   // Hash the password
   const hashedPassword: string = await bcrypt.hash(password, 12);
@@ -58,65 +58,62 @@ const createAdmin = async (req: Request): Promise<User> => {
   return result;
 };
 
-const getAllFromDB = async (params: any, options: IPaginationOptions) => {
-  const { limit, page, skip, sortBy, sortOrder } =
-    paginationHelper.calculatePagination(options);
-  const { searchTerm, ...filterData } = params;
-  const andCondition: Prisma.UserWhereInput[] = [];
+const getAllFromDB = async () => {
+  // const { limit, page, skip, sortBy, sortOrder } =
+  //   paginationHelper.calculatePagination(options);
+  // const { searchTerm, ...filterData } = params;
+  // const andCondition: Prisma.UserWhereInput[] = [];
 
-  if (searchTerm) {
-    andCondition.push({
-      OR: userSearchableFields.map((field) => ({
-        [field]: {
-          contains: searchTerm,
-          mode: 'insensitive',
-        },
-      })),
-    });
-  }
+  // if (searchTerm) {
+  //   andCondition.push({
+  //     OR: userSearchableFields.map((field) => ({
+  //       [field]: {
+  //         contains: searchTerm,
+  //         mode: 'insensitive',
+  //       },
+  //     })),
+  //   });
+  // }
 
-  if (Object.keys(filterData).length > 0) {
-    andCondition.push({
-      AND: Object.keys(filterData).map((key) => ({
-        [key]: {
-          equals: (filterData as any)[key],
-        },
-      })),
-    });
-  }
+  // if (Object.keys(filterData).length > 0) {
+  //   andCondition.push({
+  //     AND: Object.keys(filterData).map((key) => ({
+  //       [key]: {
+  //         equals: (filterData as any)[key],
+  //       },
+  //     })),
+  //   });
+  // }
 
-  const whereConditions: Prisma.UserWhereInput =
-    andCondition.length > 0 ? { AND: andCondition } : {};
+  // const whereConditions: Prisma.UserWhereInput =
+  //   andCondition.length > 0 ? { AND: andCondition } : {};
 
-  const role =
-    whereConditions.role && typeof whereConditions.role === 'string'
-      ? whereConditions.role
-      : undefined;
+  // const role =
+  //   whereConditions.role && typeof whereConditions.role === 'string'
+  //     ? whereConditions.role
+  //     : undefined;
 
-  const result = await prisma.user.findMany({
-    where: whereConditions,
-    skip,
-    take: limit,
-    orderBy:
-      sortBy && sortOrder
-        ? {
-            [sortBy]: sortOrder,
-          }
-        : {
-            createdAt: 'desc',
-          },
-  });
+  const result = await prisma.user.findMany();
 
-  const total = await prisma.user.count({
-    where: whereConditions,
-  });
+  // const total = await prisma.user.count({
+  //   where: whereConditions,
+  // });
+
+  // {
+  //   where: whereConditions,
+  //   skip,
+  //   take: limit,
+  //   orderBy:
+  //     sortBy && sortOrder
+  //       ? {
+  //           [sortBy]: sortOrder,
+  //         }
+  //       : {
+  //           createdAt: 'desc',
+  //         },
+  // }
 
   return {
-    meta: {
-      page,
-      limit,
-      total,
-    },
     data: result,
   };
 };

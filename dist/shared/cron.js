@@ -83,6 +83,25 @@ const updateFlashSaleStatus = () => __awaiter(void 0, void 0, void 0, function* 
     });
     yield Promise.all(flashSaleUpdates);
 });
+const expireFlashSales = () => __awaiter(void 0, void 0, void 0, function* () {
+    const now = new Date();
+    // Find all expired flash sales
+    const expiredSales = yield prisma_1.default.flashSale.findMany({
+        where: { endsAt: { lt: now }, isActive: true },
+    });
+    for (const sale of expiredSales) {
+        // Mark the flash sale as inactive
+        yield prisma_1.default.flashSale.update({
+            where: { id: sale.id },
+            data: { isActive: false },
+        });
+        // Update associated products
+        yield prisma_1.default.product.updateMany({
+            where: { flashSaleId: sale.id },
+            data: { flashSale: false },
+        });
+    }
+});
 function withRetries(task_1) {
     return __awaiter(this, arguments, void 0, function* (task, retries = 3) {
         for (let attempt = 1; attempt <= retries; attempt++) {
@@ -107,13 +126,11 @@ const scheduleJobs = () => {
                 yield incrementDay();
                 console.log('DayCount incremented successfully.');
             }));
-            // // Delete old carts
-            // await withRetries(async () => {
-            //   const result = await deleteOldCarts();
-            //   console.log(
-            //     `${result.count} carts older than 30 days have been deleted.`,
-            //   );
-            // });
+            // Delete expired flash sales
+            yield withRetries(() => __awaiter(void 0, void 0, void 0, function* () {
+                yield expireFlashSales();
+                console.log(`Expired flash sales have been deleted.`);
+            }));
             // Delete expired coupons
             yield withRetries(() => __awaiter(void 0, void 0, void 0, function* () {
                 yield deleteExpiredCoupons();

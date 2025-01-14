@@ -52,6 +52,16 @@ const updateFlashSale = catchAsync(async (req, res, next) => {
   });
 });
 
+const updateFlashSaleStatus = catchAsync(async (req, res, next) => {
+  const result = await flashSaleService.updateFlashSaleStatus(req);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'Flash sale status updated successfully.',
+    data: result,
+  });
+});
+
 const deleteFlashSale = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
 
@@ -69,5 +79,6 @@ export const flashSaleController = {
   getFlashSaleByID,
   createFlashSale,
   updateFlashSale,
+  updateFlashSaleStatus,
   deleteFlashSale,
 };

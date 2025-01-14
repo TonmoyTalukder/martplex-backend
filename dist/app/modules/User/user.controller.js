@@ -17,8 +17,6 @@ const user_service_1 = require("./user.service");
 const responseHelper_1 = require("../../../helpers/responseHelper");
 const catchAsync_1 = __importDefault(require("../../../shared/catchAsync"));
 const http_status_codes_1 = require("http-status-codes");
-const pick_1 = __importDefault(require("../../../shared/pick"));
-const user_constant_1 = require("./user.constant");
 const createAdmin = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield user_service_1.userService.createAdmin(req);
     (0, responseHelper_1.sendResponse)(res, {
@@ -29,14 +27,14 @@ const createAdmin = (0, catchAsync_1.default)((req, res, next) => __awaiter(void
     });
 }));
 const getAllFromDB = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const filters = (0, pick_1.default)(req.query, user_constant_1.userFilterableFields);
-    const options = (0, pick_1.default)(req.query, user_constant_1.userFilterableOptions);
-    const result = yield user_service_1.userService.getAllFromDB(filters, options);
+    // const filters = pick(req.query, userFilterableFields);
+    // const options = pick(req.query, userFilterableOptions);
+    const result = yield user_service_1.userService.getAllFromDB();
     (0, responseHelper_1.sendResponse)(res, {
         statusCode: http_status_codes_1.StatusCodes.OK,
         success: true,
         message: 'Users data fetched!',
-        meta: result.meta,
+        // meta: result.meta,
         data: result.data,
     });
 }));

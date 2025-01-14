@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
@@ -123,15 +123,17 @@ model Product {
   isDeleted     Boolean  @default(false)
   vendorStandId String
   categoryId    String
+  flashSaleId   String?
 
-  category       Category          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  vendorStand    VendorStand       @relation(fields: [vendorStandId], references: [id], onDelete: Cascade)
-  categories     ProductCategory[]
-  orderItems     OrderItem[]
-  reviews        Review[]
-  recentProducts RecentProduct[]
-  CartItem       CartItem[]
-  reportProduct  ReportProduct[]
+  category        Category          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  vendorStand     VendorStand       @relation(fields: [vendorStandId], references: [id], onDelete: Cascade)
+  categories      ProductCategory[]
+  orderItems      OrderItem[]
+  reviews         Review[]
+  recentProducts  RecentProduct[]
+  CartItem        CartItem[]
+  reportProduct   ReportProduct[]
+  flashSaleDetail FlashSale?        @relation("FlashSaleProducts", fields: [flashSaleId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -353,7 +355,8 @@ model FlashSale {
   startsAt    DateTime
   endsAt      DateTime
   isActive    Boolean  @default(true)
-  coupon      String?
+
+  products Product[] @relation("FlashSaleProducts")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

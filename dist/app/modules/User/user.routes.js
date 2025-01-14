@@ -29,10 +29,13 @@ router.get('/:id',
 // ),
 user_controller_1.userController.getUserProfile);
 router.get('/', (0, auth_1.default)(client_1.UserRole.ADMIN, client_1.UserRole.SUPER_ADMIN), user_controller_1.userController.getAllFromDB);
-router.post('/create-admin', (0, auth_1.default)(client_1.UserRole.ADMIN, client_1.UserRole.SUPER_ADMIN), fileUploader_1.fileUploader.upload.single('file'), (req, res, next) => {
-    req.body = user_validation_1.userValidation.createAdmin.parse(JSON.parse(req.body.data));
-    return user_controller_1.userController.createAdmin(req, res, next);
-});
+router.post('/create-admin', (0, auth_1.default)(client_1.UserRole.ADMIN, client_1.UserRole.SUPER_ADMIN), 
+// fileUploader.upload.single('file'),
+// (req: Request, res: Response, next: NextFunction) => {
+//   req.body = userValidation.createAdmin.parse(JSON.parse(req.body.data));
+//   return userController.createAdmin(req, res, next);
+// },
+user_controller_1.userController.createAdmin);
 router.patch('/:id/status', (0, auth_1.default)(client_1.UserRole.ADMIN, client_1.UserRole.SUPER_ADMIN), (0, validateRequest_1.default)(user_validation_1.userValidation.updateStatus), user_controller_1.userController.changeProfileStatus);
 router.patch('/:id/become-vendor', (0, auth_1.default)(client_1.UserRole.CUSTOMER, client_1.UserRole.VENDOR), user_controller_1.userController.becomeVendor);
 router.patch('/:id/update-my-profile', (0, auth_1.default)(client_1.UserRole.ADMIN, client_1.UserRole.CUSTOMER, client_1.UserRole.VENDOR, client_1.UserRole.SUPER_ADMIN), fileUploader_1.fileUploader.upload.single('file'), (req, res, next) => {

@@ -58,6 +58,15 @@ const updateFlashSale = (0, catchAsync_1.default)((req, res, next) => __awaiter(
         data: result,
     });
 }));
+const updateFlashSaleStatus = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield flashSale_service_1.flashSaleService.updateFlashSaleStatus(req);
+    (0, responseHelper_1.sendResponse)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        success: true,
+        message: 'Flash sale status updated successfully.',
+        data: result,
+    });
+}));
 const deleteFlashSale = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     const result = yield flashSale_service_1.flashSaleService.deleteFlashSale(id);
@@ -73,5 +82,6 @@ exports.flashSaleController = {
     getFlashSaleByID,
     createFlashSale,
     updateFlashSale,
+    updateFlashSaleStatus,
     deleteFlashSale,
 };

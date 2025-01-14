@@ -81,6 +81,29 @@ const updateFlashSaleStatus = async () => {
   await Promise.all(flashSaleUpdates);
 };
 
+const expireFlashSales = async () => {
+  const now = new Date();
+
+  // Find all expired flash sales
+  const expiredSales = await prisma.flashSale.findMany({
+    where: { endsAt: { lt: now }, isActive: true },
+  });
+
+  for (const sale of expiredSales) {
+    // Mark the flash sale as inactive
+    await prisma.flashSale.update({
+      where: { id: sale.id },
+      data: { isActive: false },
+    });
+
+    // Update associated products
+    await prisma.product.updateMany({
+      where: { flashSaleId: sale.id },
+      data: { flashSale: false },
+    });
+  }
+};
+
 async function withRetries<T>(task: () => Promise<T>, retries = 3) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
@@ -104,13 +127,11 @@ export const scheduleJobs = () => {
         console.log('DayCount incremented successfully.');
       });
 
-      // // Delete old carts
-      // await withRetries(async () => {
-      //   const result = await deleteOldCarts();
-      //   console.log(
-      //     `${result.count} carts older than 30 days have been deleted.`,
-      //   );
-      // });
+      // Delete expired flash sales
+      await withRetries(async () => {
+        await expireFlashSales();
+        console.log(`Expired flash sales have been deleted.`);
+      });
 
       // Delete expired coupons
       await withRetries(async () => {
