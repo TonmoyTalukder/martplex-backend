@@ -59,7 +59,11 @@ const getAllOrders = async (params: any, options: IPaginationOptions) => {
       payment: true,
       items: {
         include: {
-          product: true,
+          product: {
+            include: {
+              category: true,
+            },
+          },
         },
       },
     },

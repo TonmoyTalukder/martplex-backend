@@ -69,7 +69,11 @@ const getAllOrders = (params, options) => __awaiter(void 0, void 0, void 0, func
             payment: true,
             items: {
                 include: {
-                    product: true,
+                    product: {
+                        include: {
+                            category: true,
+                        },
+                    },
                 },
             },
         },

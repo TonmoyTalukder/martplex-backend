@@ -9,7 +9,7 @@ exports.createProductSchema = zod_1.z.object({
         .max(100, 'Name cannot exceed 100 characters'),
     description: zod_1.z
         .string()
-        .max(500, 'Description cannot exceed 500 characters')
+        .max(50000, 'Description cannot exceed 50000 characters')
         .optional(),
     price: zod_1.z
         .number()
@@ -37,7 +37,7 @@ const updateProductSchema = zod_1.z.object({
         .optional(),
     description: zod_1.z
         .string()
-        .max(500, 'Description cannot exceed 500 characters')
+        .max(50000, 'Description cannot exceed 5000 characters')
         .optional(),
     price: zod_1.z.number().optional(),
     stock: zod_1.z
