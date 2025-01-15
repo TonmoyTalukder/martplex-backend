@@ -51,6 +51,9 @@ const getAllFlashSales = (params, options) => __awaiter(void 0, void 0, void 0, 
             : {
                 createdAt: 'desc',
             },
+        include: {
+            products: true,
+        },
     });
     const total = yield prisma_1.default.flashSale.count({
         where: whereConditions,

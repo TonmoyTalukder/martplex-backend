@@ -44,6 +44,10 @@ const getAllFlashSales = async (params: any, options: IPaginationOptions) => {
         : {
             createdAt: 'desc',
           },
+
+    include: {
+      products: true,
+    },
   });
 
   const total = await prisma.flashSale.count({
@@ -123,7 +127,7 @@ const updateFlashSale = async (req: Request): Promise<FlashSale> => {
     where: { id: existingFlashSale.id },
     data: { name, description, discount, startsAt, endsAt, isActive },
   });
-  
+
   if (!isActive) {
     // Set flashSale field to false for associated products
     await prisma.product.updateMany({
